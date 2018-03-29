@@ -1,4 +1,11 @@
-[user]
-	name = Arik Muller
-	email = ariye1991@gmail.com
-	username = mullerik
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
