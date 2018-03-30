@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 public class ImageProcessor extends FunctioalForEachLoops {
-	
+
 	//MARK: Fields
 	public final Logger logger;
 	public final BufferedImage workingImage;
@@ -65,9 +65,26 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	
 	
 	//MARK: Unimplemented methods
-	public BufferedImage greyscale() {
-		//TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("greyscale");
+	public BufferedImage grayscale() {
+		logger.log("Prepareing for grayscale...");
+
+		int r = rgbWeights.redWeight;
+		int g = rgbWeights.greenWeight;
+		int b = rgbWeights.blueWeight;
+		int sumWeights = (r + g + b);
+
+		BufferedImage ans = newEmptyInputSizedImage();
+
+		forEach((y, x) -> {
+			Color c = new Color(workingImage.getRGB(x, y));
+			int grayColor = (r*c.getRed() + g*c.getGreen() + b*c.getBlue()) / sumWeights;
+			Color color = new Color(grayColor, grayColor, grayColor);
+			ans.setRGB(x, y, color.getRGB());
+		});
+
+		logger.log("Image grayscale done!");
+
+		return ans;
 	}
 
 	public BufferedImage gradientMagnitude() {

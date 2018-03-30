@@ -95,11 +95,11 @@ public class MenuWindow extends JFrame implements Logger {
 		present(img, "Change hue");
 	}
 	
-	public void greyscale() {
+	public void grayscale() {
 		BufferedImage img = new ImageProcessor(this,
 				duplicateImage(),
-				colorMixer.getRGBWeights()).greyscale();
-		present(img, "Grey scale");
+				colorMixer.getRGBWeights()).grayscale();
+		present(img, "Gray scale");
 	}
 	
 	public void gradientMagnitude() {

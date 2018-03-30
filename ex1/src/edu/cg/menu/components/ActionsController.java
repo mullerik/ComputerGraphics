@@ -37,7 +37,7 @@ public class ActionsController extends JPanel {
 		
 		//sets buttons:
 		panel1.add(addAndGetButton("Change hue - example", menuWindow::changeHue));
-		panel1.add(addAndGetButton("Greyscale", menuWindow::greyscale));
+		panel1.add(addAndGetButton("Grayscale", menuWindow::grayscale));
 		panel1.add(addAndGetButton("Gradient magnitude", menuWindow::gradientMagnitude));
 		panel1.add(addAndGetButton("Resize", menuWindow::resize));
 		
