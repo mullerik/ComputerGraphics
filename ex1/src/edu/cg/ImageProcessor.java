@@ -40,7 +40,7 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	
 	//MARK: Change picture hue - example
 	public BufferedImage changeHue() {
-		logger.log("Prepareing for hue changing...");
+		logger.log("Preparing for hue changing...");
 		
 		int r = rgbWeights.redWeight;
 		int g = rgbWeights.greenWeight;
@@ -66,7 +66,7 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	
 	//MARK: Unimplemented methods
 	public BufferedImage grayscale() {
-		logger.log("Prepareing for grayscale...");
+		logger.log("Preparing for grayscale...");
 
 		int r = rgbWeights.redWeight;
 		int g = rgbWeights.greenWeight;
@@ -88,8 +88,29 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	}
 
 	public BufferedImage gradientMagnitude() {
-		//TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("gradientMagnitude");
+		logger.log("Preparing for gradientMagnitude...");
+        BufferedImage ans = newEmptyInputSizedImage();
+        BufferedImage grayscaled =grayscale();
+
+		forEach((y, x) -> {
+			// We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
+			int weight = grayscaled.getRGB(x, y) & 0xFF;
+			int weightNextHorizontal = (x != inWidth - 1) ?
+					(grayscaled.getRGB(x + 1, y) & 0xFF) :
+					(grayscaled.getRGB(x - 1, y) & 0xFF);
+			int weightNextVertical = (y != inHeight - 1) ?
+					(grayscaled.getRGB(x, y + 1) & 0xFF) :
+					(grayscaled.getRGB(x, y - 1) & 0xFF);
+			int dx = weightNextHorizontal - weight;
+			int dy = weightNextVertical - weight;
+
+			int gradientMagnitude = (int) Math.sqrt((dx * dx + dy * dy)/2);
+			Color color = new Color(gradientMagnitude, gradientMagnitude, gradientMagnitude);
+			ans.setRGB(x, y, color.getRGB());
+		});
+
+		logger.log("GradientMagnitude done!");
+		return ans;
 	}
 	
 	public BufferedImage nearestNeighbor() {
