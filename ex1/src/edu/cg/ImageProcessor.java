@@ -88,9 +88,11 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	}
 
 	public BufferedImage gradientMagnitude() {
+	    // TODO: "as requested, if the image dimensions are too small, throw an appropriate exception"
+
 		logger.log("Preparing for gradientMagnitude...");
         BufferedImage ans = newEmptyInputSizedImage();
-        BufferedImage grayscaled =grayscale();
+        BufferedImage grayscaled = grayscale();
 
 		forEach((y, x) -> {
 			// We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
@@ -114,8 +116,21 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	}
 	
 	public BufferedImage nearestNeighbor() {
-		//TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("nearestNeighbor");
+        logger.log("Preparing for nearestNeighbor...");
+        BufferedImage ans = newEmptyOutputSizedImage();
+        BufferedImage imageToProcess = changeHue();
+        double widthRatio = ((double) inWidth) / ((double) outWidth);
+        double heightRatio = ((double) inHeight) / ((double) outHeight);
+
+        setForEachOutputParameters();
+        forEach((y, x) -> {
+            int nearestY = (int) Math.round(y * heightRatio);
+            int nearestX = (int) Math.round(x * widthRatio);
+            ans.setRGB(x, y, imageToProcess.getRGB(nearestX, nearestY));
+        });
+
+        logger.log("NearestNeighbor done!");
+        return ans;
 	}
 	
 	public BufferedImage bilinear() {
