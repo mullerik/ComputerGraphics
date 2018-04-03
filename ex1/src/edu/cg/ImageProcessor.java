@@ -135,9 +135,58 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	
 	public BufferedImage bilinear() {
 		//TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("bilinear");
+//		throw new UnimplementedMethodException("bilinear");
+		logger.log("Preparing for bilinear...");
+		BufferedImage ans = newEmptyOutputSizedImage();
+		double widthRatio = ((double) inWidth) / ((double) outWidth);
+		double heightRatio = ((double) inHeight) / ((double) outHeight);
+
+		setForEachOutputParameters();
+		forEach((y, x) -> {
+			// Find coordinates of the 4 pixels around the new point
+			int x0 = (int) (x * widthRatio);
+			int x1 = Math.min(x0 + 1, inWidth - 1);
+			int y0 = (int) (y * widthRatio);
+			int y1 = Math.min(y0 + 1, inHeight - 1);
+
+			// Find distance "t" for x-axis
+			double tx = (double) x1 - (x * widthRatio);
+
+			// Calculate linear interpolation twice (upper and lower bounds)
+			Color c = new Color(workingImage.getRGB(x0, y0));
+			Color c2 = new Color(workingImage.getRGB(x1, y0));
+			Color cx1 = ImageProcessor.linearInterpolation(c, c2, tx);
+
+			c = new Color(workingImage.getRGB(x0, y1));
+			c2 = new Color(workingImage.getRGB(x1, y1));
+			Color cx2 = ImageProcessor.linearInterpolation(c, c2, tx);
+
+			// Find distance "t" for y-axis
+			double ty = (double) y1 - (y * heightRatio);
+
+			// Calculate linear interpolation with the new points
+			ans.setRGB(x, y, ImageProcessor.linearInterpolation(cx1, cx2, ty).getRGB());
+		});
+
+		logger.log("Bilinear done!");
+		return ans;
 	}
-	
+
+	private static Color linearInterpolation(Color c, Color c2, double t) {
+		double r = c.getRed();
+		double g = c.getGreen();
+		double b = c.getBlue();
+		double r2 = c2.getRed();
+		double g2 = c2.getGreen();
+		double b2 = c2.getBlue();
+		return new Color(ImageProcessor.weightedAvgByDistance(r, r2, t), ImageProcessor.weightedAvgByDistance(g, g2, t), ImageProcessor.weightedAvgByDistance(b, b2, t));
+
+	}
+
+	private static int weightedAvgByDistance(double n1, double n2, double t) {
+		int avg = (int) ((1 - t) * n2 + t * n1);
+		return Math.min(Math.max(avg, 0), 255);
+	}
 	
 	//MARK: Utilities
 	public final void setForEachInputParameters() {
