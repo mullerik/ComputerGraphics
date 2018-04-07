@@ -1,12 +1,6 @@
 package edu.cg;
 
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Comparator;
-import javafx.collections.transformation.SortedList;
-
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
@@ -24,6 +18,7 @@ public class SeamsCarver extends ImageProcessor {
 
     private long[][] costMatrix;
     private int[][] grayscaleMatrix;
+
     private Seam[] seams;
 
 
@@ -52,21 +47,27 @@ public class SeamsCarver extends ImageProcessor {
         else
             resizeOp = this::duplicateWorkingImage;
 
-        calculateCostMatrix();
-        findSeams();
+        // TODO: diferent params each time...
+        calculateCostAndGreyscaleMatrixes(workingImage, inHeight, inWidth);
+
+        // TODO: iterative...
+        seams = findOneSeam(inHeight, inWidth);
     }
 
-    private void findSeams() {
-        SeamPoint[][] dynamicMatrix = new SeamPoint[inHeight][inWidth];
+    private Seam[] findOneSeam(int height, int width) {
+        SeamPoint[][] dynamicMatrix = new SeamPoint[height][width];
 
         // First line
-        forEachWidth(x -> dynamicMatrix[0][x] = new SeamPoint(costMatrix[0][x], -1));
-        for(int y = 1; y < inHeight; y++) {
-            for(int x = 0; x < inWidth; x++){
+        for(int x = 0; x < width; x++){
+            dynamicMatrix[0][x] = new SeamPoint(costMatrix[0][x], -1);
+        }
+
+        for(int y = 1; y < height; y++) {
+            for(int x = 0; x < width; x++) {
                 SeamPoint currentPoint = null;
                 long costAtCurrentPoint = costMatrix[y][x];
 
-                boolean isCorner = (x == 0) || (x == inWidth - 1);
+                boolean isCorner = (x == 0) || (x == width- 1);
                 if(isCorner) {
                     // TODO: current logic is not to include edges in calculation whe we are next to corners.
                     //       solution: change `todo` variable (and make sure that leftmost/rightmost seams can be sometimes chosen!)
@@ -100,21 +101,24 @@ public class SeamsCarver extends ImageProcessor {
                     }
                 }
                 dynamicMatrix[y][x] = currentPoint;
-            };
+            }
         }
 
         // convert to seams:
-        seams = new Seam[inWidth];
-        forEachWidth(x -> seams[x] = recreateSeam(dynamicMatrix, x));
+        Seam[] possibleSeams = new Seam[width];
+        for(int x = 0; x < width; x++){
+            possibleSeams[x] = recreateSeam(dynamicMatrix, x, height);
+        }
 
         // Sort seams
-        Arrays.sort(seams, (o1, o2) -> (int) (o1.cost - o2.cost));
+        Arrays.sort(possibleSeams, (o1, o2) -> (int) (o1.cost - o2.cost));
+        return possibleSeams;
     }
 
-    private Seam recreateSeam(SeamPoint[][] dynamicMatrix, Integer x) {
-        int[] offsets = new int[inHeight];
-        recreateSeamRecursion(dynamicMatrix, inHeight - 1, x, offsets);
-        return new Seam(dynamicMatrix[inHeight - 1][x].cost, offsets);
+    private Seam recreateSeam(SeamPoint[][] dynamicMatrix, int x, int height) {
+        int[] offsets = new int[height];
+        recreateSeamRecursion(dynamicMatrix, height - 1, x, offsets);
+        return new Seam(dynamicMatrix[height - 1][x].cost, offsets);
     }
 
     private void recreateSeamRecursion(SeamPoint[][] dynamicMatrix, int y, int x, int[] offsets) {
@@ -124,30 +128,32 @@ public class SeamsCarver extends ImageProcessor {
         }
     }
 
-    private int getAbsoluteDiffInGrayscale(int y1, int x1, int y2, int x2) {
-        try {
-            return Math.abs(grayscaleMatrix[y1][x1] - grayscaleMatrix[y2][x2]);
-        } catch (IndexOutOfBoundsException e) {
-            return -1;
+//    private int getAbsoluteDiffInGrayscale(int y1, int x1, int y2, int x2) {
+//        try {
+//            return Math.abs(grayscaleMatrix[y1][x1] - grayscaleMatrix[y2][x2]);
+//        } catch (IndexOutOfBoundsException e) {
+//            return -1;
+//        }
+//    }
+
+    private void calculateCostAndGreyscaleMatrixes(BufferedImage image, int height, int width) {
+        BufferedImage grayscaled = grayscale(image, height, width);
+        costMatrix = new long[height][width];
+        grayscaleMatrix = new int[height][width];
+
+        for(int y = 1; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
+                int weight = grayscaled.getRGB(x, y) & 0xFF;
+                int weightNextHorizontal = (x != width - 1) ?
+                        (grayscaled.getRGB(x + 1, y) & 0xFF) :
+                        (grayscaled.getRGB(x - 1, y) & 0xFF);
+
+                int energy = Math.abs(weightNextHorizontal - weight);
+                grayscaleMatrix[y][x] = weight;
+                costMatrix[y][x] = energy;
+            }
         }
-    }
-
-    private void calculateCostMatrix() {
-        BufferedImage grayscaled = grayscale();
-        costMatrix = new long[inHeight][inWidth];
-        grayscaleMatrix = new int[inHeight][inWidth];
-
-        forEach((y, x) -> {
-            // We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
-            int weight = grayscaled.getRGB(x, y) & 0xFF;
-            int weightNextHorizontal = (x != inWidth - 1) ?
-                    (grayscaled.getRGB(x + 1, y) & 0xFF) :
-                    (grayscaled.getRGB(x - 1, y) & 0xFF);
-
-            int energy = Math.abs(weightNextHorizontal - weight);
-            grayscaleMatrix[y][x] = weight;
-            costMatrix[y][x] = energy;
-        });
     }
 
     //MARK: Methods
@@ -168,24 +174,13 @@ public class SeamsCarver extends ImageProcessor {
 
     public BufferedImage showSeams(int seamColorRGB) {
         logger.log("Preparing for showSeams...");
-
         BufferedImage imageProcessed = changeHue();
-
-        int r = rgbWeights.redWeight;
-        int g = rgbWeights.greenWeight;
-        int b = rgbWeights.blueWeight;
-        int sumWeights = (r + g + b);
-
-
-        forEach((y, x) -> {
-            if( x < numOfSeams) {
-                Color color = new Color(255, 0, 0);
-                imageProcessed.setRGB(seams[x].getOffsets()[y], y, color.getRGB());
+        for(int y = 1; y < inHeight; y++) {
+            for (int x = 0; x < numOfSeams; x++) {
+                imageProcessed.setRGB(seams[x].getOffsets()[y], y, seamColorRGB);
             }
-        });
-
-        logger.log("Image grayscale done!");
-
+        }
+        logger.log("ShowSeams done!");
         return imageProcessed;
     }
 

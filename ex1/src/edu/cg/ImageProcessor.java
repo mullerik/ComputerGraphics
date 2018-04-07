@@ -64,28 +64,31 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	}
 	
 	
-	//MARK: Unimplemented methods
 	public BufferedImage grayscale() {
 		logger.log("Preparing for grayscale...");
-
-		int r = rgbWeights.redWeight;
-		int g = rgbWeights.greenWeight;
-		int b = rgbWeights.blueWeight;
-		int sumWeights = (r + g + b);
-
-		BufferedImage ans = newEmptyInputSizedImage();
-
-		forEach((y, x) -> {
-			Color c = new Color(workingImage.getRGB(x, y));
-			int grayColor = (r*c.getRed() + g*c.getGreen() + b*c.getBlue()) / sumWeights;
-			Color color = new Color(grayColor, grayColor, grayColor);
-			ans.setRGB(x, y, color.getRGB());
-		});
-
+		BufferedImage ans = grayscale(workingImage, inHeight, inWidth);
 		logger.log("Image grayscale done!");
-
 		return ans;
 	}
+
+    BufferedImage grayscale(BufferedImage inputImage, int height, int width) {
+        int r = rgbWeights.redWeight;
+        int g = rgbWeights.greenWeight;
+        int b = rgbWeights.blueWeight;
+        int sumWeights = (r + g + b);
+
+        BufferedImage ans = newEmptyImage(width, height);
+
+        for(int y = 0 ; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				Color c = new Color(inputImage.getRGB(x, y));
+				int grayColor = (r * c.getRed() + g * c.getGreen() + b * c.getBlue()) / sumWeights;
+				Color color = new Color(grayColor, grayColor, grayColor);
+				ans.setRGB(x, y, color.getRGB());
+			}
+		}
+        return ans;
+    }
 
 	public BufferedImage gradientMagnitude() {
 	    // TODO: "as requested, if the image dimensions are too small, throw an appropriate exception"
