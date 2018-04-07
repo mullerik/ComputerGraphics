@@ -19,7 +19,7 @@ public class SeamsCarver extends ImageProcessor {
     private long[][] costMatrix;
     private int[][] grayscaleMatrix;
 
-    private Seam[] seams;
+    private Seam[] foundSeams;
 
 
     // TODO: make sure that the first seam is the cheapest
@@ -47,14 +47,38 @@ public class SeamsCarver extends ImageProcessor {
         else
             resizeOp = this::duplicateWorkingImage;
 
-        // TODO: diferent params each time...
-        calculateCostAndGreyscaleMatrixes(workingImage, inHeight, inWidth);
 
-        // TODO: iterative...
-        seams = findOneSeam(inHeight, inWidth);
+        foundSeams =  new Seam[numOfSeams];
+
+        BufferedImage currentImage = workingImage;
+        int currentImageWidth = inWidth;
+        for(int i = 0; i < numOfSeams; i++) {
+            calculateCostAndGreyscaleMatrixes(currentImage, inHeight, currentImageWidth);
+            Seam currentSeam = findSeam(inHeight, currentImageWidth);
+            foundSeams[i] = currentSeam;
+
+            currentImageWidth--;
+            currentImage = removeSeam(currentImage, inHeight, currentImageWidth, currentSeam);
+        }
     }
 
-    private Seam[] findOneSeam(int height, int width) {
+    private BufferedImage removeSeam(BufferedImage currentImage, int height, int width, Seam seam) {
+        int[] offsets = seam.getOffsets();
+
+        BufferedImage ans = newEmptyImage(width, height);
+        for(int y = 1; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if(x >= offsets[y]) {
+                    ans.setRGB(x, y, currentImage.getRGB(x + 1, y));
+                } else {
+                    ans.setRGB(x, y, currentImage.getRGB(x, y));
+                }
+            }
+        }
+        return ans;
+    }
+
+    private Seam findSeam(int height, int width) {
         SeamPoint[][] dynamicMatrix = new SeamPoint[height][width];
 
         // First line
@@ -111,8 +135,9 @@ public class SeamsCarver extends ImageProcessor {
         }
 
         // Sort seams
+        // TODO: no need to sort all, just find the minimum seam
         Arrays.sort(possibleSeams, (o1, o2) -> (int) (o1.cost - o2.cost));
-        return possibleSeams;
+        return possibleSeams[0];
     }
 
     private Seam recreateSeam(SeamPoint[][] dynamicMatrix, int x, int height) {
@@ -173,11 +198,12 @@ public class SeamsCarver extends ImageProcessor {
     }
 
     public BufferedImage showSeams(int seamColorRGB) {
+        numOfSeams = foundSeams.length; // TODO: remove this line
         logger.log("Preparing for showSeams...");
         BufferedImage imageProcessed = changeHue();
         for(int y = 1; y < inHeight; y++) {
             for (int x = 0; x < numOfSeams; x++) {
-                imageProcessed.setRGB(seams[x].getOffsets()[y], y, seamColorRGB);
+                imageProcessed.setRGB(foundSeams[x].getOffsets()[y], y, seamColorRGB);
             }
         }
         logger.log("ShowSeams done!");
