@@ -2,7 +2,10 @@ package edu.cg;
 
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SeamsCarver extends ImageProcessor {
 
@@ -169,14 +172,6 @@ public class SeamsCarver extends ImageProcessor {
         }
     }
 
-//    private int getAbsoluteDiffInGrayscale(int y1, int x1, int y2, int x2) {
-//        try {
-//            return Math.abs(grayscaleMatrix[y1][x1] - grayscaleMatrix[y2][x2]);
-//        } catch (IndexOutOfBoundsException e) {
-//            return -1;
-//        }
-//    }
-
     private static long[][] calculateCostMatrix(int[][] greyscaleMatrix, int height, int width) {
         long[][] costMatrix = new long[height][width];
 
@@ -206,9 +201,46 @@ public class SeamsCarver extends ImageProcessor {
         return shrinkedImage;
     }
 
-    private BufferedImage increaseImageWidth() {
-        //TODO: Implement this method, remove the exception.
-        throw new UnimplementedMethodException("increaseImageWidth");
+    private BufferedImage increaseImageWidth() { // TODO: organzie code in this function
+        normalizeSeams();
+        BufferedImage ans = newEmptyOutputSizedImage();
+
+        int[][] accumulators = new int[inHeight][inWidth];
+
+        for(int i = 0; i < numOfSeams; i++) {
+            int[] offsetsOfCurrentSeam = foundSeams[i].getOffsets();
+            int height = offsetsOfCurrentSeam.length; // TODO: maybe use outHeight instead of this variable
+
+            for (int y = 0; y < height; y++) {
+                accumulators[y][offsetsOfCurrentSeam[y]]++;
+            }
+        }
+
+        int[][] originalImageAsMatrix = imageToMatrix(workingImage, inHeight, inWidth);
+        ColorAndCounter[][] matrixAsColorAndCounter = new ColorAndCounter[inHeight][inWidth];
+
+        for (int y = 0; y < inHeight; y++) {
+            for(int x = 0; x < inWidth; x++){
+                matrixAsColorAndCounter[y][x] = new ColorAndCounter(originalImageAsMatrix[y][x], accumulators[y][x]);
+            }
+        }
+        for (int y = 0; y < inHeight; y++) {
+            ColorAndCounter[] currentLine = matrixAsColorAndCounter[y];
+
+
+            List<Integer> l = Arrays.stream(currentLine).flatMap(colorAndCounter -> {
+                List<Integer> colors = new ArrayList<>();
+                for (int i = 0; i < colorAndCounter.counter + 1; i++){
+                    colors.add(colorAndCounter.color);
+                }
+                return colors.stream();
+            }).collect(Collectors.toList());
+
+            for(int x = 0; x < outWidth; x++){
+                ans.setRGB(x, y, l.get(x));
+            }
+        }
+        return ans;
     }
 
     public BufferedImage showSeams(int seamColorRGB) {
@@ -300,6 +332,15 @@ public class SeamsCarver extends ImageProcessor {
 
         public int[] getOffsets() {
             return offsets;
+        }
+    }
+
+    private class ColorAndCounter {
+        int color;
+        int counter;
+        ColorAndCounter(int color, int counter){
+            this.color = color;
+            this.counter = counter;
         }
     }
 
