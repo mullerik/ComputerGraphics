@@ -21,10 +21,7 @@ public class SeamsCarver extends ImageProcessor {
 
     private Seam[] foundSeams;
 
-
-    // TODO: make sure that the first seam is the cheapest
-//	private SortedList<Seam> seams;
-
+    BufferedImage shrinkedImage = null;
 
     //MARK: Constructor
     public SeamsCarver(Logger logger, BufferedImage workingImage,
@@ -60,6 +57,7 @@ public class SeamsCarver extends ImageProcessor {
             currentImageWidth--;
             currentImage = removeSeam(currentImage, inHeight, currentImageWidth, currentSeam);
         }
+        shrinkedImage = currentImage;
     }
 
     private BufferedImage removeSeam(BufferedImage currentImage, int height, int width, Seam seam) {
@@ -174,9 +172,10 @@ public class SeamsCarver extends ImageProcessor {
                         (grayscaled.getRGB(x + 1, y) & 0xFF) :
                         (grayscaled.getRGB(x - 1, y) & 0xFF);
 
-                int energy = Math.abs(weightNextHorizontal - weight);
                 grayscaleMatrix[y][x] = weight;
-                costMatrix[y][x] = energy;
+
+                // We choose to use squared for better output
+                costMatrix[y][x] = (weightNextHorizontal - weight) * (weightNextHorizontal - weight);
             }
         }
     }
@@ -188,8 +187,8 @@ public class SeamsCarver extends ImageProcessor {
 
     //MARK: Unimplemented methods
     private BufferedImage reduceImageWidth() {
-        //TODO: Implement this method, remove the exception.
-        throw new UnimplementedMethodException("reduceImageWidth");
+        logger.log("reduceImageWidth done!");
+        return shrinkedImage;
     }
 
     private BufferedImage increaseImageWidth() {
