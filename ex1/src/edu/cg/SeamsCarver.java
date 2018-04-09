@@ -2,7 +2,10 @@ package edu.cg;
 
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SeamsCarver extends ImageProcessor {
 
@@ -19,12 +22,9 @@ public class SeamsCarver extends ImageProcessor {
     private long[][] costMatrix;
     private int[][] grayscaleMatrix;
 
-    private Seam[] seams;
+    private Seam[] foundSeams;
 
-
-    // TODO: make sure that the first seam is the cheapest
-//	private SortedList<Seam> seams;
-
+    private BufferedImage shrinkedImage = null;
 
     //MARK: Constructor
     public SeamsCarver(Logger logger, BufferedImage workingImage,
@@ -47,14 +47,57 @@ public class SeamsCarver extends ImageProcessor {
         else
             resizeOp = this::duplicateWorkingImage;
 
-        // TODO: diferent params each time...
-        calculateCostAndGreyscaleMatrixes(workingImage, inHeight, inWidth);
 
-        // TODO: iterative...
-        seams = findOneSeam(inHeight, inWidth);
+        foundSeams =  new Seam[numOfSeams];
+
+        int[][] currentImageMatrix = imageToMatrix(workingImage, inHeight, inWidth);
+        int currentImageWidth = inWidth;
+        long k = System.currentTimeMillis();
+        for(int i = 0; i < numOfSeams; i++) {
+//            long k = System.currentTimeMillis();
+            grayscaleMatrix = toGreyscale(currentImageMatrix, inHeight, currentImageWidth);
+            costMatrix = calculateCostMatrix(grayscaleMatrix, inHeight, currentImageWidth);
+//            System.out.print(">>>> " + (System.currentTimeMillis() - k));
+            Seam currentSeam = findSeam(inHeight, currentImageWidth);
+            foundSeams[i] = currentSeam;
+
+            currentImageWidth--;
+            currentImageMatrix = removeSeam(currentImageMatrix, inHeight, currentImageWidth, currentSeam);
+//            System.out.println(" >>>> " + (System.currentTimeMillis() - k));
+        }
+        System.out.println(">>>>>>>> " + (System.currentTimeMillis() - k));
+
+        // TODO: move the following line to its revevant method
+        shrinkedImage = matrixToImage(currentImageMatrix, inHeight, inWidth - numOfSeams);
     }
 
-    private Seam[] findOneSeam(int height, int width) {
+    private BufferedImage matrixToImage(int[][] imageMatrix, int height, int width) {
+        BufferedImage ans = newEmptyImage(width, height);
+        for(int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                ans.setRGB(x, y, imageMatrix[y][x]);
+            }
+        }
+        return ans;
+    }
+
+    private int[][] removeSeam(int[][] currentImageMatrix, int height, int width, Seam seam) {
+        int[] offsets = seam.getOffsets();
+
+        int[][] ans = new int[height][width];
+        for(int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if(x >= offsets[y]) {
+                    ans[y][x] = currentImageMatrix[y][x+1];
+                } else {
+                    ans[y][x] = currentImageMatrix[y][x];
+                }
+            }
+        }
+        return ans;
+    }
+
+    private Seam findSeam(int height, int width) {
         SeamPoint[][] dynamicMatrix = new SeamPoint[height][width];
 
         // First line
@@ -111,8 +154,9 @@ public class SeamsCarver extends ImageProcessor {
         }
 
         // Sort seams
+        // TODO: no need to sort all, just find the minimum seam
         Arrays.sort(possibleSeams, (o1, o2) -> (int) (o1.cost - o2.cost));
-        return possibleSeams;
+        return possibleSeams[0];
     }
 
     private Seam recreateSeam(SeamPoint[][] dynamicMatrix, int x, int height) {
@@ -128,32 +172,22 @@ public class SeamsCarver extends ImageProcessor {
         }
     }
 
-//    private int getAbsoluteDiffInGrayscale(int y1, int x1, int y2, int x2) {
-//        try {
-//            return Math.abs(grayscaleMatrix[y1][x1] - grayscaleMatrix[y2][x2]);
-//        } catch (IndexOutOfBoundsException e) {
-//            return -1;
-//        }
-//    }
+    private static long[][] calculateCostMatrix(int[][] greyscaleMatrix, int height, int width) {
+        long[][] costMatrix = new long[height][width];
 
-    private void calculateCostAndGreyscaleMatrixes(BufferedImage image, int height, int width) {
-        BufferedImage grayscaled = grayscale(image, height, width);
-        costMatrix = new long[height][width];
-        grayscaleMatrix = new int[height][width];
-
-        for(int y = 1; y < height; y++) {
+        for(int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                // We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
-                int weight = grayscaled.getRGB(x, y) & 0xFF;
+                int weight = greyscaleMatrix[y][x];
                 int weightNextHorizontal = (x != width - 1) ?
-                        (grayscaled.getRGB(x + 1, y) & 0xFF) :
-                        (grayscaled.getRGB(x - 1, y) & 0xFF);
+                        (greyscaleMatrix[y][x+1]) :
+                        (greyscaleMatrix[y][x-1]);
 
-                int energy = Math.abs(weightNextHorizontal - weight);
-                grayscaleMatrix[y][x] = weight;
-                costMatrix[y][x] = energy;
+                // We choose to use squared for better output
+                int temp = weightNextHorizontal - weight;
+                costMatrix[y][x] = temp * temp;
             }
         }
+        return costMatrix;
     }
 
     //MARK: Methods
@@ -163,25 +197,103 @@ public class SeamsCarver extends ImageProcessor {
 
     //MARK: Unimplemented methods
     private BufferedImage reduceImageWidth() {
-        //TODO: Implement this method, remove the exception.
-        throw new UnimplementedMethodException("reduceImageWidth");
+        logger.log("reduceImageWidth done!");
+        return shrinkedImage;
     }
 
-    private BufferedImage increaseImageWidth() {
-        //TODO: Implement this method, remove the exception.
-        throw new UnimplementedMethodException("increaseImageWidth");
+    private BufferedImage increaseImageWidth() { // TODO: organzie code in this function
+        normalizeSeams();
+        BufferedImage ans = newEmptyOutputSizedImage();
+
+        int[][] accumulators = new int[inHeight][inWidth];
+
+        for(int i = 0; i < numOfSeams; i++) {
+            int[] offsetsOfCurrentSeam = foundSeams[i].getOffsets();
+            int height = offsetsOfCurrentSeam.length; // TODO: maybe use outHeight instead of this variable
+
+            for (int y = 0; y < height; y++) {
+                accumulators[y][offsetsOfCurrentSeam[y]]++;
+            }
+        }
+
+        int[][] originalImageAsMatrix = imageToMatrix(workingImage, inHeight, inWidth);
+        ColorAndCounter[][] matrixAsColorAndCounter = new ColorAndCounter[inHeight][inWidth];
+
+        for (int y = 0; y < inHeight; y++) {
+            for(int x = 0; x < inWidth; x++){
+                matrixAsColorAndCounter[y][x] = new ColorAndCounter(originalImageAsMatrix[y][x], accumulators[y][x]);
+            }
+        }
+        for (int y = 0; y < inHeight; y++) {
+            ColorAndCounter[] currentLine = matrixAsColorAndCounter[y];
+
+
+            List<Integer> l = Arrays.stream(currentLine).flatMap(colorAndCounter -> {
+                List<Integer> colors = new ArrayList<>();
+                for (int i = 0; i < colorAndCounter.counter + 1; i++){
+                    colors.add(colorAndCounter.color);
+                }
+                return colors.stream();
+            }).collect(Collectors.toList());
+
+            for(int x = 0; x < outWidth; x++){
+                ans.setRGB(x, y, l.get(x));
+            }
+        }
+        return ans;
     }
 
     public BufferedImage showSeams(int seamColorRGB) {
         logger.log("Preparing for showSeams...");
+        normalizeSeams();
+
+        // TODO: maybe not need changeHue here?
         BufferedImage imageProcessed = changeHue();
-        for(int y = 1; y < inHeight; y++) {
+        // TODO: maybe start y from 0
+        for(int y = 0; y < inHeight; y++) {
             for (int x = 0; x < numOfSeams; x++) {
-                imageProcessed.setRGB(seams[x].getOffsets()[y], y, seamColorRGB);
+                imageProcessed.setRGB(foundSeams[x].getOffsets()[y], y, seamColorRGB);
             }
         }
         logger.log("ShowSeams done!");
         return imageProcessed;
+    }
+
+    /**
+     * Move the found seams to be in the corresponding indexes in the original image
+     */
+    private void normalizeSeams() {
+        for(int i = 0; i < numOfSeams; i++){
+            for(int j = i + 1; j < numOfSeams; j++){
+
+                // push all seams that came after i and have x position > x position of i
+                for(int y = 0; y < inHeight; y++){
+                    if(foundSeams[j].getOffsets()[y] >= foundSeams[i].getOffsets()[y]) {
+                        foundSeams[j].getOffsets()[y]++;
+                    }
+                }
+            }
+        }
+    }
+
+    private static int[][] imageToMatrix(BufferedImage image, int height, int width) {
+        int[][] matrix = new int[height][width];
+        for(int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                matrix[y][x] = image.getRGB(x, y);
+            }
+        }
+        return matrix;
+    }
+
+    private static int[][] toGreyscale(int[][] original, int height, int width) {
+        int[][] matrix = new int[height][width];
+        for(int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                matrix[y][x] = original[y][x] & 0xFF;
+            }
+        }
+        return matrix;
     }
 
     private class SeamPoint {
@@ -220,6 +332,15 @@ public class SeamsCarver extends ImageProcessor {
 
         public int[] getOffsets() {
             return offsets;
+        }
+    }
+
+    private class ColorAndCounter {
+        int color;
+        int counter;
+        ColorAndCounter(int color, int counter){
+            this.color = color;
+            this.counter = counter;
         }
     }
 
