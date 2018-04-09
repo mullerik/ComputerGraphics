@@ -147,42 +147,45 @@ public class ImageProcessor extends FunctioalForEachLoops {
 		setForEachOutputParameters();
 		forEach((y, x) -> {
 			// Find coordinates of the 4 pixels around the new point
-			int x0 = (int) (x * widthRatio);
-			int x1 = Math.min(x0 + 1, inWidth - 1);
-			int y0 = (int) (y * widthRatio);
-			int y1 = Math.min(y0 + 1, inHeight - 1);
+			// Variable names match the way pixels were named in the presentation
+			int v12 = (int) (x * widthRatio);
+			int v22 = Math.min(v12 + 1, inWidth - 1);
+			int v11 = (int) (y * heightRatio);
+			int v21 = Math.min(v11 + 1, inHeight - 1);
 
 			// Find distance "t" for x-axis
-			double tx = (double) x1 - (x * widthRatio);
+			double tx = (double) v22 - (x * widthRatio);
 
 			// Calculate linear interpolation twice (upper and lower bounds)
-			Color c = new Color(workingImage.getRGB(x0, y0));
-			Color c2 = new Color(workingImage.getRGB(x1, y0));
-			Color cx1 = ImageProcessor.linearInterpolation(c, c2, tx);
+			Color clr1 = new Color(workingImage.getRGB(v12, v11));
+			Color clr2 = new Color(workingImage.getRGB(v22, v11));
+			Color v2 = ImageProcessor.linearInterpolation(clr1, clr2, tx);
 
-			c = new Color(workingImage.getRGB(x0, y1));
-			c2 = new Color(workingImage.getRGB(x1, y1));
-			Color cx2 = ImageProcessor.linearInterpolation(c, c2, tx);
+			clr1 = new Color(workingImage.getRGB(v12, v21));
+			clr2 = new Color(workingImage.getRGB(v22, v21));
+			Color v1 = ImageProcessor.linearInterpolation(clr1, clr2, tx);
 
 			// Find distance "t" for y-axis
-			double ty = (double) y1 - (y * heightRatio);
+			double ty = (double) v21 - (y * heightRatio);
 
 			// Calculate linear interpolation with the new points
-			ans.setRGB(x, y, ImageProcessor.linearInterpolation(cx1, cx2, ty).getRGB());
+			ans.setRGB(x, y, ImageProcessor.linearInterpolation(v2, v1, ty).getRGB());
 		});
 
 		logger.log("Bilinear done!");
 		return ans;
 	}
 
-	private static Color linearInterpolation(Color c, Color c2, double t) {
-		double r = c.getRed();
-		double g = c.getGreen();
-		double b = c.getBlue();
-		double r2 = c2.getRed();
-		double g2 = c2.getGreen();
-		double b2 = c2.getBlue();
-		return new Color(ImageProcessor.weightedAvgByDistance(r, r2, t), ImageProcessor.weightedAvgByDistance(g, g2, t), ImageProcessor.weightedAvgByDistance(b, b2, t));
+	private static Color linearInterpolation(Color clr1, Color clr2, double t) {
+		double r1 = clr1.getRed();
+		double g1 = clr1.getGreen();
+		double b1 = clr1.getBlue();
+		double r2 = clr2.getRed();
+		double g2 = clr2.getGreen();
+		double b2 = clr2.getBlue();
+		return new Color(ImageProcessor.weightedAvgByDistance(r1, r2, t),
+				ImageProcessor.weightedAvgByDistance(g1, g2, t),
+				ImageProcessor.weightedAvgByDistance(b1, b2, t));
 
 	}
 

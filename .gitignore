@@ -1,14 +1,12 @@
 .metadata
 bin/
 tmp/
+.idea/
 *.tmp
 *.bak
 *.swp
-*~.nib
-local.properties
+*.iml
 .settings/
 .loadpath
 .recommenders
-*.idea*
-*.iml
 */out*
