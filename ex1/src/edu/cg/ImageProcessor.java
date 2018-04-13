@@ -62,8 +62,11 @@ public class ImageProcessor extends FunctioalForEachLoops {
 		
 		return ans;
 	}
-	
-	
+
+    /**
+     * Calculate greyscale for the working image.
+     * @return
+     */
 	public BufferedImage grayscale() {
 		logger.log("Preparing for grayscale...");
 		BufferedImage ans = grayscale(workingImage, inHeight, inWidth);
@@ -71,14 +74,24 @@ public class ImageProcessor extends FunctioalForEachLoops {
 		return ans;
 	}
 
+    /**
+     * Calculate greyscale for a given image
+     * @param inputImage image
+     * @param height image height
+     * @param width image width
+     * @return
+     */
     BufferedImage grayscale(BufferedImage inputImage, int height, int width) {
-        int r = rgbWeights.redWeight;
+
+	    // Calculate sumWeights
+	    int r = rgbWeights.redWeight;
         int g = rgbWeights.greenWeight;
         int b = rgbWeights.blueWeight;
         int sumWeights = (r + g + b);
 
         BufferedImage ans = newEmptyImage(width, height);
 
+        // Iterate all pixels change to the correct gray level
         for(int y = 0 ; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				Color c = new Color(inputImage.getRGB(x, y));
@@ -90,14 +103,22 @@ public class ImageProcessor extends FunctioalForEachLoops {
         return ans;
     }
 
+    /**
+     * Calculate the gradient magnitude for the working image
+     * @return An image that represents the gradient magnitude at each pixel
+     */
 	public BufferedImage gradientMagnitude() {
-	    // TODO: "as requested, if the image dimensions are too small, throw an appropriate exception"
+        // If the image dimensions are too small, throw an appropriate exception"
+        if(inWidth < 3 || inHeight < 3) {
+            throw new RuntimeException("Can not apply gradientMagnitude: Image is too small");
+        }
 
 		logger.log("Preparing for gradientMagnitude...");
         BufferedImage ans = newEmptyInputSizedImage();
         BufferedImage grayscaled = grayscale();
 
 		forEach((y, x) -> {
+
 			// We can use green since in grayscale red=green=blue.Also avoid creation of `Color` object for performance.
 			int weight = grayscaled.getRGB(x, y) & 0xFF;
 			int weightNextHorizontal = (x != inWidth - 1) ?
@@ -109,6 +130,7 @@ public class ImageProcessor extends FunctioalForEachLoops {
 			int dx = weightNextHorizontal - weight;
 			int dy = weightNextVertical - weight;
 
+			// Calculate the gradient magnitude using the formula
 			int gradientMagnitude = (int) Math.sqrt((dx * dx + dy * dy)/2);
 			Color color = new Color(gradientMagnitude, gradientMagnitude, gradientMagnitude);
 			ans.setRGB(x, y, color.getRGB());
@@ -117,11 +139,17 @@ public class ImageProcessor extends FunctioalForEachLoops {
 		logger.log("GradientMagnitude done!");
 		return ans;
 	}
-	
+
+    /**
+     * Resize the working image using Nearest Neighbor algorithm
+     * @return The resized image
+     */
 	public BufferedImage nearestNeighbor() {
         logger.log("Preparing for nearestNeighbor...");
         BufferedImage ans = newEmptyOutputSizedImage();
         BufferedImage imageToProcess = changeHue();
+
+        // Calculate the resizing ratio
         double widthRatio = ((double) inWidth) / ((double) outWidth);
         double heightRatio = ((double) inHeight) / ((double) outHeight);
 
@@ -135,10 +163,12 @@ public class ImageProcessor extends FunctioalForEachLoops {
         logger.log("NearestNeighbor done!");
         return ans;
 	}
-	
+
+    /**
+     * Apply the Bilinear algorithm to resize the working image
+     * @return The resized image
+     */
 	public BufferedImage bilinear() {
-		//TODO: Implement this method, remove the exception.
-//		throw new UnimplementedMethodException("bilinear");
 		logger.log("Preparing for bilinear...");
 		BufferedImage ans = newEmptyOutputSizedImage();
 		double widthRatio = ((double) inWidth) / ((double) outWidth);
@@ -146,6 +176,7 @@ public class ImageProcessor extends FunctioalForEachLoops {
 
 		setForEachOutputParameters();
 		forEach((y, x) -> {
+
 			// Find coordinates of the 4 pixels around the new point
 			// Variable names match the way pixels were named in the presentation
 			int v12 = (int) (x * widthRatio);
