@@ -312,7 +312,7 @@ public class SeamsCarver extends ImageProcessor {
         logger.log("Preparing for showSeams...");
         normalizeSeams();
 
-        // TODO: maybe not need changeHue here?
+        // TODO: maybe not need changeHue here? TODO: it is not needed. just copy the original image
         BufferedImage imageProcessed = changeHue();
         for(int y = 0; y < inHeight; y++) {
             for (int x = 0; x < numOfSeams; x++) {

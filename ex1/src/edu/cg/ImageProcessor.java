@@ -147,7 +147,6 @@ public class ImageProcessor extends FunctioalForEachLoops {
 	public BufferedImage nearestNeighbor() {
         logger.log("Preparing for nearestNeighbor...");
         BufferedImage ans = newEmptyOutputSizedImage();
-        BufferedImage imageToProcess = changeHue();
 
         // Calculate the resizing ratio
         double widthRatio = ((double) inWidth) / ((double) outWidth);
@@ -157,7 +156,7 @@ public class ImageProcessor extends FunctioalForEachLoops {
         forEach((y, x) -> {
             int nearestY = (int) Math.round(y * heightRatio);
             int nearestX = (int) Math.round(x * widthRatio);
-            ans.setRGB(x, y, imageToProcess.getRGB(nearestX, nearestY));
+            ans.setRGB(x, y, workingImage.getRGB(nearestX, nearestY));
         });
 
         logger.log("NearestNeighbor done!");
