@@ -130,13 +130,9 @@ public class SeamsCarver extends ImageProcessor {
                 // Corners are treated differently
                 boolean isCorner = (x == 0) || (x == width- 1);
                 if(isCorner) {
-                    // TODO: current logic is not to include edges in calculation whe we are next to corners.
-                    //       solution: change `todo` variable (and make sure that leftmost/rightmost seams can be sometimes chosen!)
-                    long todo = costAtCurrentPoint;
-
                     int sideIndex = (x == 0) ? x + 1 : x - 1;
-                    long midCost = dynamicMatrix[y-1][x].cost + costAtCurrentPoint + todo;
-                    long sideCost = dynamicMatrix[y-1][sideIndex].cost + costAtCurrentPoint + todo;
+                    long midCost = dynamicMatrix[y-1][x].cost + costAtCurrentPoint;
+                    long sideCost = dynamicMatrix[y-1][sideIndex].cost + costAtCurrentPoint;
 
                     // Choose the cheaper: side pixel or mid pixel
                     if(midCost <= sideCost) {
