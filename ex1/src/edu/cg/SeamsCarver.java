@@ -23,7 +23,7 @@ public class SeamsCarver extends ImageProcessor {
     private int[][] grayscaleMatrix;
 
     private Seam[] foundSeams;
-
+    private int[][] originalImageAsMatrix = null;
     private BufferedImage shrinkedImage = null;
 
     //MARK: Constructor
@@ -47,10 +47,12 @@ public class SeamsCarver extends ImageProcessor {
         else
             resizeOp = this::duplicateWorkingImage;
 
+        originalImageAsMatrix = imageToMatrix(workingImage, inHeight, inWidth);
+
         foundSeams =  new Seam[numOfSeams];
 
         // Convert to matrix for performance
-        int[][] currentImageMatrix = imageToMatrix(workingImage, inHeight, inWidth);
+        int[][] currentImageMatrix = originalImageAsMatrix;
 
         // Iterate to find the required number of seams
         int currentImageWidth = inWidth;
@@ -260,16 +262,12 @@ public class SeamsCarver extends ImageProcessor {
 
         for(int i = 0; i < numOfSeams; i++) {
             int[] offsetsOfCurrentSeam = foundSeams[i].getOffsets();
-            int height = offsetsOfCurrentSeam.length; // TODO: maybe use outHeight instead of this variable
 
             // Increment the accumulator indexes that correspond to current seam
-            for (int y = 0; y < height; y++) {
+            for (int y = 0; y < inHeight; y++) {
                 accumulators[y][offsetsOfCurrentSeam[y]]++;
             }
         }
-
-        // Convert original image to matrix
-        int[][] originalImageAsMatrix = imageToMatrix(workingImage, inHeight, inWidth);// TODO: this was already done! use the above thing
 
         // Create a copy of the original image such that each cell also have a counter for the number
         // of times to duplicate each pixel.
@@ -312,15 +310,14 @@ public class SeamsCarver extends ImageProcessor {
         logger.log("Preparing for showSeams...");
         normalizeSeams();
 
-        // TODO: maybe not need changeHue here? TODO: it is not needed. just copy the original image
-        BufferedImage imageProcessed = changeHue();
+        BufferedImage imageToProcess = duplicateWorkingImage();
         for(int y = 0; y < inHeight; y++) {
             for (int x = 0; x < numOfSeams; x++) {
-                imageProcessed.setRGB(foundSeams[x].getOffsets()[y], y, seamColorRGB);
+                imageToProcess.setRGB(foundSeams[x].getOffsets()[y], y, seamColorRGB);
             }
         }
         logger.log("ShowSeams done!");
-        return imageProcessed;
+        return imageToProcess;
     }
 
     /**
