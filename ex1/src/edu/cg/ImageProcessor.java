@@ -206,6 +206,13 @@ public class ImageProcessor extends FunctioalForEachLoops {
 		return ans;
 	}
 
+    /**
+     * Calculate the new color to be used as linear interpolation. This function calculates for two colors.
+     * @param clr1
+     * @param clr2
+     * @param t
+     * @return The interpolation color of two colors
+     */
 	private static Color linearInterpolation(Color clr1, Color clr2, double t) {
 		double r1 = clr1.getRed();
 		double g1 = clr1.getGreen();
@@ -219,6 +226,13 @@ public class ImageProcessor extends FunctioalForEachLoops {
 
 	}
 
+    /**
+     * Calculate the weighted average distance
+     * @param n1
+     * @param n2
+     * @param t
+     * @return The weighted average of the two values
+     */
 	private static int weightedAvgByDistance(double n1, double n2, double t) {
 		int avg = (int) ((1 - t) * n2 + t * n1);
 		return Math.min(Math.max(avg, 0), 255);
