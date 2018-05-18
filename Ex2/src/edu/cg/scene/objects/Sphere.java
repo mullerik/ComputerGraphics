@@ -1,9 +1,9 @@
 package edu.cg.scene.objects;
 
-import edu.cg.UnimplementedMethodException;
 import edu.cg.algebra.Hit;
 import edu.cg.algebra.Point;
 import edu.cg.algebra.Ray;
+import edu.cg.algebra.Vec;
 
 public class Sphere extends Shape {
 	private Point center;
@@ -35,10 +35,31 @@ public class Sphere extends Shape {
 		this.radius = radius;
 		return this;
 	}
-	
+
+	/**
+	 * Intersect ray and sphere
+	 * based on https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld013.htm
+	 * @param ray
+	 * @return
+	 */
 	@Override
-	public Hit intersect(Ray ray) {
-		//TODO: implement this method.
-		throw new UnimplementedMethodException("intersect(Ray)");
+	public Hit intersect(Ray ray) { // TODO: make sure it works
+		Vec l = center.sub(ray.source());
+		double tca = l.dot(ray.direction());
+		if(tca < 0) {
+			// ray goes to opposite direction
+			return null;
+		}
+
+		double dSquare = l.dot(l) - (tca * tca);
+		double radSquare = radius * radius;
+		if(dSquare > radSquare) {
+			// no intersection
+			return null;
+		}
+		double thc = Math.sqrt(radSquare - dSquare);
+		double t = tca - thc;
+		Vec normalToSphere = ray.add(t).sub(this.center).normalize();
+		return new Hit(t, normalToSphere);
 	}
 }

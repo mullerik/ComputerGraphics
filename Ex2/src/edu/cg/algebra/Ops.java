@@ -2,8 +2,6 @@ package edu.cg.algebra;
 
 import edu.cg.UnimplementedMethodException;
 
-//import ex3.UnimplementedMethodException;
-
 public class Ops {
 	public static final double epsilon = 1e-5;
 	public static final double infinity = 1e8;

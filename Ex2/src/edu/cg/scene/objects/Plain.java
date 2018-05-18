@@ -106,9 +106,34 @@ public class Plain extends Shape {
 		return alphaPlusBeta % 2 == 0 ? material.Kd1 : material.Kd2;
 	}
 
+    /**
+     * Cacculate ray and plain intersection. formula:
+     * Ray: P0 + t*V
+     * Plane: P*N + d = 0
+     * t = - (P0*N + d) / (V*N)
+     * @param ray
+     * @return
+     */
 	@Override
-	public Hit intersect(Ray ray) {
-		//TODO: implement this method.
-		throw new UnimplementedMethodException("intersect(Ray)");
+	public Hit intersect(Ray ray ) { //TODO: make sure this works
+		if(isRayParallelToPlane(ray)) {
+		    return null;
+        }
+
+        Vec normal = this.normal();
+        double t = - (ray.source().toVec().dot(normal) + d) / (ray.direction().dot(normal));
+        Vec normalToSurface;
+        if(ray.direction().dot(this.normal()) < 0) {
+            normalToSurface = normal;
+        } else {
+            normalToSurface = normal.neg();
+        }
+        return new Hit(t, normalToSurface);
 	}
+
+	private boolean isRayParallelToPlane(Ray ray){
+	    // TODO
+
+        return false;
+    }
 }

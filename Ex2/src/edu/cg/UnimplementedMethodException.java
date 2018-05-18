@@ -5,5 +5,6 @@ public class UnimplementedMethodException extends RuntimeException {
 	
 	public UnimplementedMethodException(String methodName) {
 		super("Method " + methodName + " is not implemented.");
+		printStackTrace();//TODO: delete this line
 	}
 }

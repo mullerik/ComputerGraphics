@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 
 import edu.cg.Logger;
 import edu.cg.UnimplementedMethodException;
+import edu.cg.algebra.Hit;
 import edu.cg.algebra.Point;
 import edu.cg.algebra.Ray;
 import edu.cg.algebra.Vec;
@@ -197,6 +198,20 @@ public class Scene {
 	
 	private Vec calcColor(Ray ray, int recusionLevel) {
 		//TODO: implement this method
-		throw new UnimplementedMethodException("calcColor(Ray, int)");
+//		throw new UnimplementedMethodException("calcColor(Ray, int)");
+        Surface closest = null;
+        double minT = Double.MAX_VALUE;
+        for(Surface surface: surfaces) {
+            Hit hit = surface.intersect(ray);
+            if(hit != null && hit.t() < minT) {
+                closest = surface;
+                minT = hit.t();
+            }
+        }
+
+        if(closest != null) {
+            return new Vec(closest.reflectionIntensity(), closest.reflectionIntensity(), closest.reflectionIntensity());
+        }
+		return new Vec(0, 0, 0);
 	}
 }
