@@ -198,19 +198,43 @@ public class Scene {
 	private Vec calcColor(Ray ray, int recusionLevel) {
 		//TODO: implement this method
 //		throw new UnimplementedMethodException("calcColor(Ray, int)");
-        Surface closest = null;
+        Surface closestSurface = null;
         double minT = Double.MAX_VALUE;
+        Hit bestHit = null;
         for(Surface surface: surfaces) {
             Hit hit = surface.intersect(ray);
             if(hit != null && hit.t() < minT) {
-                closest = surface;
+                closestSurface = surface;
                 minT = hit.t();
+                bestHit = hit;
             }
         }
 
-        if(closest != null) {
-            return closest.Ka().mult(ambient);//.mult(new Vec(surfaces.indexOf(closest)));
+        if(closestSurface == null) {
+            return backgroundColor;
         }
-		return backgroundColor;
-	}
+
+        Vec result = closestSurface.Ka().mult(ambient);//.mult(new Vec(surfaces.indexOf(closestSurface)));
+
+
+        for(Light light: lightSources) {
+            Point point = ray.add(bestHit.t());
+
+            // From slide 58
+            double cosAngleBetweenNornalAndLight = light.calculateCosAngleBetweenNormalAndLight(bestHit.getNormalToSurface(), point);
+            boolean isLightRelevant = cosAngleBetweenNornalAndLight > 0;
+            if(isLightRelevant) {
+                Vec Kd = bestHit.getSurface().Kd(point);
+                Vec diffuse = Kd.mult(cosAngleBetweenNornalAndLight).mult(light.intensityForPoint(point));
+
+
+                Vec specular = new Vec();// TODO...
+
+
+                result = result.add(diffuse).add(specular);
+            }
+        }
+
+        return result;
+    }
 }

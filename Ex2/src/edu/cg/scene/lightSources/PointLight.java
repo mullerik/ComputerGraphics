@@ -28,7 +28,17 @@ public class PointLight extends Light {
 	public PointLight initIntensity(Vec intensity) {
 		return (PointLight)super.initIntensity(intensity);
 	}
-	
+
+	@Override
+	public double calculateCosAngleBetweenNormalAndLight(Vec normalToSurface, Point point) {
+		return 0;//TODO
+	}
+
+	@Override
+	public Vec intensityForPoint(Point point) {
+		return null;//TODO
+	}
+
 	public PointLight initPosition(Point position) {
 		this.position = position;
 		return this;

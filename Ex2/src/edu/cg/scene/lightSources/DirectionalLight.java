@@ -1,5 +1,6 @@
 package edu.cg.scene.lightSources;
 
+import edu.cg.algebra.Point;
 import edu.cg.algebra.Vec;
 
 public class DirectionalLight extends Light {
@@ -21,6 +22,16 @@ public class DirectionalLight extends Light {
 	public DirectionalLight initIntensity(Vec intensity) {
 		return (DirectionalLight)super.initIntensity(intensity);
 	}
-	
+
+	@Override
+	public double calculateCosAngleBetweenNormalAndLight(Vec normalToSurface, Point point) {
+		return direction.neg().normalize().dot(normalToSurface);
+	}
+
+	@Override
+	public Vec intensityForPoint(Point point) {
+		return intensity;
+	}
+
 	//TODO: add some methods
 }
