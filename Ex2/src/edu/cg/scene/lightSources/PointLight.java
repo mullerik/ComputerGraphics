@@ -31,12 +31,14 @@ public class PointLight extends Light {
 
 	@Override
 	public double calculateCosAngleBetweenNormalAndLight(Vec normalToSurface, Point point) {
-		return 0;//TODO
+		return position.sub(point).normalize().dot(normalToSurface);
 	}
 
 	@Override
 	public Vec intensityForPoint(Point point) {
-		return null;//TODO
+	    double d = position.sub(point).length();
+	    double attenuationFactor = 1 / (kc + kl*d + kq*d*d);
+		return intensity.mult(attenuationFactor);
 	}
 
 	public PointLight initPosition(Point position) {
@@ -50,6 +52,4 @@ public class PointLight extends Light {
 		this.kc = kc;
 		return this;
 	}
-
-	//TODO: add some methods
 }

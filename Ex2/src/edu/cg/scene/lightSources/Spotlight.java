@@ -40,6 +40,13 @@ public class Spotlight extends PointLight {
 	public Spotlight initDecayFactors(double q, double l, double c) {
 		return (Spotlight)super.initDecayFactors(q, l, c);
 	}
-	
-	//TODO: add some methods
+
+	@Override
+	public Vec intensityForPoint(Point point) {
+		double angleFromDrection = point.sub(position).normalize().dot(direction.normalize());
+		if(angleFromDrection < 0 || angleFromDrection > angle) {
+		    return new Vec(0);
+        }
+        return super.intensityForPoint(point).mult(angleFromDrection);
+	}
 }

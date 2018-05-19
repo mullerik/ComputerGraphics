@@ -226,7 +226,7 @@ public class Scene {
             if(isLightRelevant) {
                 Vec Kd = bestHit.getSurface().Kd(point);
                 Vec diffuse = Kd.mult(cosAngleBetweenNornalAndLight).mult(light.intensityForPoint(point));
-
+                System.out.println(diffuse);
 
                 Vec specular = new Vec();// TODO...
 
