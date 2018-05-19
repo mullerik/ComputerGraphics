@@ -1,11 +1,6 @@
 package edu.cg.scene.objects;
 
-import edu.cg.UnimplementedMethodException;
-import edu.cg.algebra.Hit;
-import edu.cg.algebra.Mat3x3;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
+import edu.cg.algebra.*;
 
 public class Plain extends Shape {
 	//implicit form of a plain: ax + by + cz + d = 0;
@@ -115,20 +110,24 @@ public class Plain extends Shape {
      * @return
      */
 	@Override
-	public Hit intersect(Ray ray ) { //TODO: make sure this works
+	public Hit intersect(Ray ray ) {
 		if(isRayParallelToPlane(ray)) {
 		    return null;
         }
 
         Vec normal = this.normal();
         double t = - (ray.source().toVec().dot(normal) + d) / (ray.direction().dot(normal));
-        Vec normalToSurface;
-        if(ray.direction().dot(this.normal()) < 0) {
-            normalToSurface = normal;
-        } else {
-            normalToSurface = normal.neg();
+
+        if(Double.isFinite(t) && t > 0) {
+            Vec normalToSurface;
+            if (ray.direction().dot(normal) < 0) {
+                normalToSurface = normal;
+            } else {
+                normalToSurface = normal.neg();
+            }
+            return new Hit(t, normalToSurface);
         }
-        return new Hit(t, normalToSurface);
+        return null;
 	}
 
 	private boolean isRayParallelToPlane(Ray ray){

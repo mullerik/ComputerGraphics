@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import edu.cg.Logger;
-import edu.cg.UnimplementedMethodException;
 import edu.cg.algebra.Hit;
 import edu.cg.algebra.Point;
 import edu.cg.algebra.Ray;
@@ -210,8 +209,8 @@ public class Scene {
         }
 
         if(closest != null) {
-            return new Vec(closest.reflectionIntensity(), closest.reflectionIntensity(), closest.reflectionIntensity());
+            return closest.Ka().mult(ambient);//.mult(new Vec(surfaces.indexOf(closest)));
         }
-		return new Vec(0, 0, 0);
+		return backgroundColor;
 	}
 }
