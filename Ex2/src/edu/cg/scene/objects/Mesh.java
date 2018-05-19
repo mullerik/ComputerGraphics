@@ -82,10 +82,23 @@ public class Mesh extends Shape implements Iterable<Triangle> {
 		};
 	}
 
+	/**
+	 * Intersect ray with this mesh by finding the closest triangle (if exists)
+	 * @param ray
+	 * @return
+	 */
 	@Override
 	public Hit intersect(Ray ray) {
-		//TODO: implement this method.
-		throw new UnimplementedMethodException("intersect(Ray)");
-	}
 
+		Hit bestHit = null;
+		for (Triangle triangle: this) {
+			Hit hit = triangle.intersect(ray);
+			if(hit != null) {
+				if(bestHit == null || hit.t() < bestHit.t()) {
+					bestHit = hit;
+				}
+			}
+		}
+		return bestHit;
+	}
 }

@@ -62,4 +62,8 @@ public class Sphere extends Shape {
 		Vec normalToSphere = ray.add(t).sub(this.center).normalize();
 		return new Hit(t, normalToSphere);
 	}
+
+    public boolean isPointInsideSphere(Point point) {
+	    return point.sub(center).length() <= radius;
+    }
 }

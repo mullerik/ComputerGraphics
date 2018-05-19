@@ -136,4 +136,13 @@ public class Plain extends Shape {
 
         return false;
     }
+
+    /**
+     * Check if a given point is positioned above a plain
+     * @param point
+     * @return
+     */
+    public boolean isAbovePlain(Point point) {
+	    return (normal.dot(point.toVec()) + d) > 0;
+    }
 }

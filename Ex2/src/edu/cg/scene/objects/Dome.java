@@ -21,10 +21,39 @@ public class Dome extends Shape {
 		return "Dome:" + endl + 
 				sphere + plain + endl;
 	}
-	
+
+	/**
+	 * Intersect ray with dome by splitting to cases.
+	 * @param ray
+	 * @return
+	 */
 	@Override
-	public Hit intersect(Ray ray) {
-		//TODO: implement this method.
-		throw new UnimplementedMethodException("intersect(Ray)");
+	public Hit intersect(Ray ray) { // TODO: make sure it works TODO: do we need logic for case that camera is inside the dome?
+		Hit sphereIntersection = sphere.intersect(ray);
+		Hit plainIntersection = plain.intersect(ray);
+
+		// If ray does not intersect sphere, no intersection at all
+		if(sphereIntersection == null) {
+			return null;
+		}
+
+		Point sphereHitPoint = ray.add(sphereIntersection.t());
+
+		// Check if sphere intersection is above the plain:
+		if(plain.isAbovePlain(sphereHitPoint)) {
+			return sphereIntersection;
+		}
+
+		// If does not intersect the plain at all
+		if(plainIntersection == null) {
+			return null;
+		}
+
+		// Check if the plainIntersection is inside the sphere
+		Point planeHitPoint = ray.add(plainIntersection.t());
+		if(sphere.isPointInsideSphere(planeHitPoint)) {
+			return plainIntersection;
+		}
+		return null;
 	}
 }
