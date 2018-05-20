@@ -10,10 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import edu.cg.Logger;
-import edu.cg.algebra.Hit;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
+import edu.cg.algebra.*;
 import edu.cg.scene.lightSources.Light;
 import edu.cg.scene.objects.Surface;
 
@@ -224,12 +221,19 @@ public class Scene {
             double cosAngleBetweenNornalAndLight = light.calculateCosAngleBetweenNormalAndLight(bestHit.getNormalToSurface(), point);
             boolean isLightRelevant = cosAngleBetweenNornalAndLight > 0;
             if(isLightRelevant) {
+                Vec intensityForPoint = (light.intensityForPoint(point));
+
+                // diffuse
                 Vec Kd = bestHit.getSurface().Kd(point);
-                Vec diffuse = Kd.mult(cosAngleBetweenNornalAndLight).mult(light.intensityForPoint(point));
-                System.out.println(diffuse);
+                Vec diffuse = Kd.mult(cosAngleBetweenNornalAndLight).mult(intensityForPoint);
 
-                Vec specular = new Vec();// TODO...
-
+                // From slide 52
+                Vec Ks = bestHit.getSurface().Ks();
+                Vec R = light.getReflectedFromSurface(bestHit.getNormalToSurface(), point);
+                Vec V = ray.direction().neg();
+                double vDotR = V.normalize().dot(R.normalize());
+                double vDotRPowerN = vDotR > 0 ? Math.pow(vDotR, bestHit.getSurface().shininess()) : 0;
+                Vec specular = Ks.mult(vDotRPowerN).mult(intensityForPoint);
 
                 result = result.add(diffuse).add(specular);
             }

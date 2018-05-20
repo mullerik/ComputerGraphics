@@ -33,5 +33,8 @@ public class DirectionalLight extends Light {
 		return intensity;
 	}
 
-	//TODO: add some methods
+    @Override
+    protected Vec vectorFromPointToLight(Point point) {
+        return direction.neg();
+    }
 }

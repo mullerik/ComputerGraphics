@@ -41,7 +41,12 @@ public class PointLight extends Light {
 		return intensity.mult(attenuationFactor);
 	}
 
-	public PointLight initPosition(Point position) {
+    @Override
+    protected Vec vectorFromPointToLight(Point point) {
+        return position.sub(point);
+    }
+
+    public PointLight initPosition(Point position) {
 		this.position = position;
 		return this;
 	}

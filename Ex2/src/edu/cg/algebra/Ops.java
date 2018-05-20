@@ -90,10 +90,15 @@ public class Ops {
 	public static boolean isFinite(Point p) {
 		return Double.isFinite(p.x) & Double.isFinite(p.y) & Double.isFinite(p.z);
 	}
-	
+
+	/**
+	 * Based on https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+	 * @param u
+	 * @param normal
+	 * @return
+	 */
 	public static Vec reflect(Vec u, Vec normal) {
-		//TODO: implement
-		throw new UnimplementedMethodException("Ops.reflect(Vec, Vec)");
+		return u.add(normal.mult(u.dot(normal) * -2));
 	}
 	
 	public static Vec refract(Vec u, Vec normal, double n1, double n2) {
