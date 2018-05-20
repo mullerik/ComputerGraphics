@@ -186,9 +186,55 @@ public class Scene {
 	private Future<Color> calcColor(int x, int y) {
 		return executor.submit(() -> {
 			//TODO: change this method implementation to implement super sampling
-			Point pointOnScreenPlain = transformaer.transform(x, y);
-			Ray ray = new Ray(camera, pointOnScreenPlain);
-			return calcColor(ray, 0).toColor();
+
+			// If antialiasing factor is 1, there's no need to continue further
+			if (this.getFactor() == 1){
+				Point pointOnScreenPlain = transformaer.transform(x, y);
+				Ray ray = new Ray(camera, pointOnScreenPlain);
+				return calcColor(ray, 0).toColor();
+			}
+
+			// Find boundaries of the pixel
+			Point cornerLeft = this.transformaer.transform(x, y);
+			Point cornerRight = this.transformaer.transform(x + 1, y + 1);
+
+			// Define a new result vector to hold the average
+			Vec result = new Vec();
+
+			// To divide for each "new pixel"
+			double newPixelWeight = 1.0 / (double)this.antiAliasingFactor;
+			// To divide the overall result and get the color average
+			double allPixelWeight = 1.0 / Math.pow(this.antiAliasingFactor, 2);
+
+			// Iterate over the new rays shooting through the "smaller pixels"
+			for (int i = 0; i < this.antiAliasingFactor; i++) {
+				for (int j = 0; j < this.antiAliasingFactor; j++) {
+					// Calculate new coordinates
+					double xCoords = this.antiAliasingFactor - j;
+					double yCoords = this.antiAliasingFactor - i;
+					// New left up corner weight
+					Point cornerLeftWeight = new Point(xCoords, yCoords, 0.0);
+					cornerLeftWeight = cornerLeftWeight.mult(newPixelWeight);
+
+					// New right down corner weight (coordinates are already fine)
+					Point cornerRightWeight = new Point(j, i, 0.0);
+					cornerRightWeight = cornerRightWeight.mult(newPixelWeight);
+
+					// Find the middle of both corners (of the new smaller "pixel")
+					// Multiple the left upper corner with the calculated weight,
+					// do the same for the lower right corner and add them together
+					Point pointOnScreenPlain = cornerLeft.mult(cornerLeftWeight).add(cornerRight.mult(cornerRightWeight));
+
+					// Define a new ray according to the pointOnScreenPlain
+					Ray ray = new Ray(this.camera, pointOnScreenPlain);
+
+					// Add the calculated color of the give ray to the result
+					result = result.add(this.calcColor(ray, 0));
+				}
+			}
+
+			// Return the average color according to antialiasing factor
+			return result.mult(allPixelWeight).toColor();
 		});
 	}
 	
