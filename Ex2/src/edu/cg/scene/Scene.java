@@ -195,7 +195,11 @@ public class Scene {
 	private Vec calcColor(Ray ray, int recusionLevel) {
 		//TODO: implement this method
 //		throw new UnimplementedMethodException("calcColor(Ray, int)");
-        Surface closestSurface = null;
+
+		// Stop from continuing to infinite loop
+		if (this.maxRecursionLevel <= recusionLevel) return new Vec();
+
+		Surface closestSurface = null;
         double minT = Double.MAX_VALUE;
         Hit bestHit = null;
         for(Surface surface: surfaces) {
@@ -213,9 +217,8 @@ public class Scene {
 
         Vec result = closestSurface.Ka().mult(ambient);//.mult(new Vec(surfaces.indexOf(closestSurface)));
 
-
+		Point point = ray.add(bestHit.t());
         for(Light light: lightSources) {
-            Point point = ray.add(bestHit.t());
 
             // From slide 58
             double cosAngleBetweenNornalAndLight = light.calculateCosAngleBetweenNormalAndLight(bestHit.getNormalToSurface(), point);
@@ -238,6 +241,22 @@ public class Scene {
                 result = result.add(diffuse).add(specular);
             }
         }
+        // Add reflections if needed
+		if (this.getRenderReflections()) {
+        	// Create a new ray with the point & direction
+			Vec refDirection = Ops.reflect(ray.direction(), bestHit.getNormalToSurface());
+			Ray newRay = new Ray(point, refDirection);
+
+			// Calculate weight
+			Vec refWeight = closestSurface.Ks().mult(closestSurface.reflectionIntensity());
+
+			// Calculate the reflective color recursively and add it to result
+			Vec tmpResult = this.calcColor(newRay, recusionLevel + 1);
+			tmpResult = tmpResult.mult(refWeight);
+
+			// Add tmp result to our result
+			result = result.add(tmpResult);
+		}
 
         return result;
     }
