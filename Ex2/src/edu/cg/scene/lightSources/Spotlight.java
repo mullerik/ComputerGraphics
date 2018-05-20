@@ -44,7 +44,7 @@ public class Spotlight extends PointLight {
 	@Override
 	public Vec intensityForPoint(Point point) {
 		double angleFromDrection = point.sub(position).normalize().dot(direction.normalize());
-		if(angleFromDrection < 0 || angleFromDrection > angle) {
+		if(angleFromDrection < 0 || angleFromDrection <= angle) {
 		    return new Vec(0);
         }
         return super.intensityForPoint(point).mult(angleFromDrection);
