@@ -111,38 +111,25 @@ public class Plain extends Shape {
      */
 	@Override
 	public Hit intersect(Ray ray ) {
-		if(isRayParallelToPlane(ray)) {
-		    return null;
-        }
-
-        Vec normal = this.normal();
-        double t = - (ray.source().toVec().dot(normal) + d) / (ray.direction().dot(normal));
+		// t = - (P0*N + d) / (V*N)
+		double t = (- this.substituteForP(ray.source())) / ray.direction().dot(new Vec(this.a, this.b, this.c));
 
         // Avoid problems with inaccuracy of floating point representation
-        if(Double.isFinite(t) && t > Ops.epsilon) {
-            Vec normalToSurface;
-            if (ray.direction().dot(normal) < 0) {
-                normalToSurface = normal;
-            } else {
-                normalToSurface = normal.neg();
-            }
-            return new Hit(t, normalToSurface);
-        }
-        return null;
+		Vec norm;
+		if (Double.isFinite(t) && t > Ops.epsilon) {
+			if (ray.direction().dot(this.normal()) < 0.0)
+				norm = this.normal();
+			else
+				norm = this.normal().neg();
+			return new Hit(t, norm);
+		}
+		// Otherwise
+		return null;
+	}
+	// According to https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
+	// Substituting for P -> P0*N + d
+	public double substituteForP(Point p) {
+		return p.toVec().dot(new Vec(this.a, this.b, this.c)) + this.d;
 	}
 
-	private boolean isRayParallelToPlane(Ray ray){
-	    // TODO
-
-        return false;
-    }
-
-    /**
-     * Check if a given point is positioned above a plain
-     * @param point
-     * @return
-     */
-    public boolean isAbovePlain(Point point) {
-	    return (normal.dot(point.toVec()) + d) > 0;
-    }
 }
