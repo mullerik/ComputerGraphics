@@ -118,7 +118,8 @@ public class Plain extends Shape {
         Vec normal = this.normal();
         double t = - (ray.source().toVec().dot(normal) + d) / (ray.direction().dot(normal));
 
-        if(Double.isFinite(t) && t > 0) {
+        // Avoid problems with inaccuracy of floating point representation
+        if(Double.isFinite(t) && t > Ops.epsilon) {
             Vec normalToSurface;
             if (ray.direction().dot(normal) < 0) {
                 normalToSurface = normal;
