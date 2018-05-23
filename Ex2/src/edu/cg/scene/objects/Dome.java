@@ -36,7 +36,7 @@ public class Dome extends Shape {
         if (hitSphere.isWithinTheSurface()){
             // Avoid problems with inaccuracy of floating point representation
             if (this.plain.subsForP(ray.source()) > Ops.epsilon) {
-                if (this.plain.subsForP(hitPoint) > 0.0)
+                if (this.plain.subsForP(hitPoint) > Ops.epsilon)
                     return hitSphere;
 
                 // Continue if you miss plain
@@ -45,20 +45,20 @@ public class Dome extends Shape {
 
                 return hitPlain.setWithin();
             }
-            if (this.plain.subsForP(hitPoint) > 0.0)
+            if (this.plain.subsForP(hitPoint) > Ops.epsilon)
                 return this.plain.intersect(ray);
         }
 
         // Hit is from outside
         else {
-            if (this.plain.subsForP(hitPoint) > 0.0)
+            if (this.plain.subsForP(hitPoint) > Ops.epsilon)
                 return hitSphere;
 
             // Continue if you miss plain
             if ((hitPlain = this.plain.intersect(ray)) == null)
                 return null;
 
-            if (this.sphere.subsForP(ray.getHittingPoint(hitPlain)) < 0.0)
+            if (this.sphere.subsForP(ray.getHittingPoint(hitPlain)) < 0)
                 return hitPlain;
 
         }
