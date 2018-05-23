@@ -1,10 +1,6 @@
 package edu.cg.scene.objects;
 
-import edu.cg.UnimplementedMethodException;
-import edu.cg.algebra.Hit;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
+import edu.cg.algebra.*;
 
 public class Dome extends Shape {
 	private Sphere sphere;
@@ -27,33 +23,47 @@ public class Dome extends Shape {
 	 * @param ray
 	 * @return
 	 */
-	@Override
-	public Hit intersect(Ray ray) { // TODO: make sure it works TODO: do we need logic for case that camera is inside the dome?
-		Hit sphereIntersection = sphere.intersect(ray);
-		Hit plainIntersection = plain.intersect(ray);
+    @Override
+    public Hit intersect(Ray ray) {
+        Hit hitPlain;
+        Hit hitSphere = this.sphere.intersect(ray);
+        // Continue if you miss sphere
+        if (hitSphere == null)
+            return null;
 
-		// If ray does not intersect sphere, no intersection at all
-		if(sphereIntersection == null) {
-			return null;
-		}
+        Point hitPoint = ray.getHittingPoint(hitSphere);
+        // Check if Hit is coming from within
+        if (hitSphere.isWithinTheSurface()){
+            // Avoid problems with inaccuracy of floating point representation
+            if (this.plain.subsForP(ray.source()) > Ops.epsilon) {
+                if (this.plain.subsForP(hitPoint) > 0.0)
+                    return hitSphere;
 
-		Point sphereHitPoint = ray.add(sphereIntersection.t());
+                // Continue if you miss plain
+                if ((hitPlain = this.plain.intersect(ray)) == null)
+                    return null;
 
-		// Check if sphere intersection is above the plain:
-		if(plain.isAbovePlain(sphereHitPoint)) {
-			return sphereIntersection;
-		}
+                return hitPlain.setWithin();
+            }
+            if (this.plain.subsForP(hitPoint) > 0.0)
+                return this.plain.intersect(ray);
+        }
 
-		// If does not intersect the plain at all
-		if(plainIntersection == null) {
-			return null;
-		}
+        // Hit is from outside
+        else {
+            if (this.plain.subsForP(hitPoint) > 0.0)
+                return hitSphere;
 
-		// Check if the plainIntersection is inside the sphere
-		Point planeHitPoint = ray.add(plainIntersection.t());
-		if(sphere.isPointInsideSphere(planeHitPoint)) {
-			return plainIntersection;
-		}
-		return null;
-	}
+            // Continue if you miss plain
+            if ((hitPlain = this.plain.intersect(ray)) == null)
+                return null;
+
+            if (this.sphere.subsForP(ray.getHittingPoint(hitPlain)) < 0.0)
+                return hitPlain;
+
+        }
+        // Either way - fallback to null if necessary
+        return null;
+    }
+
 }

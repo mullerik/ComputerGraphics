@@ -63,7 +63,8 @@ public class Sphere extends Shape {
 		return new Hit(t, normalToSphere);
 	}
 
-    public boolean isPointInsideSphere(Point point) {
-	    return point.sub(center).length() <= radius;
+    // According to https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld013.htm
+    public double subsForP(Point p) {
+        return p.distSqr(this.center) - Math.pow(this.radius, 2);
     }
 }

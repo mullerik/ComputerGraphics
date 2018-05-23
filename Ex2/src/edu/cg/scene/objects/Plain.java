@@ -112,7 +112,7 @@ public class Plain extends Shape {
 	@Override
 	public Hit intersect(Ray ray ) {
 		// t = - (P0*N + d) / (V*N)
-		double t = (- this.substituteForP(ray.source())) / ray.direction().dot(new Vec(this.a, this.b, this.c));
+		double t = (- this.subsForP(ray.source())) / ray.direction().dot(new Vec(this.a, this.b, this.c));
 
         // Avoid problems with inaccuracy of floating point representation
 		Vec norm;
@@ -128,7 +128,7 @@ public class Plain extends Shape {
 	}
 	// According to https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
 	// Substituting for P -> P0*N + d
-	public double substituteForP(Point p) {
+	public double subsForP(Point p) {
 		return p.toVec().dot(new Vec(this.a, this.b, this.c)) + this.d;
 	}
 
