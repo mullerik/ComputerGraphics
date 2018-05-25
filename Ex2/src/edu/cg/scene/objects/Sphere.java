@@ -59,6 +59,11 @@ public class Sphere extends Shape {
 		}
 		double thc = Math.sqrt(radSquare - dSquare);
 		double t = tca - thc;
+		if( t < 0) {
+
+			// Ray goes inside the sphere
+			t = tca + thc;
+		}
 		Vec normalToSphere = ray.add(t).sub(this.center).normalize();
 		return new Hit(t, normalToSphere);
 	}
