@@ -136,7 +136,6 @@ public class Scene {
 	
 	private void initSomeFields(int imgWidth, int imgHeight, Logger logger) {
 		this.logger = logger;
-		//TODO: initialize your additional field here.
 	}
 	
 	
@@ -185,7 +184,6 @@ public class Scene {
 	
 	private Future<Color> calcColor(int x, int y) {
 		return executor.submit(() -> {
-			//TODO: change this method implementation to implement super sampling
 
 			// If antialiasing factor is 1, there's no need to continue further
 			if (this.getFactor() == 1){

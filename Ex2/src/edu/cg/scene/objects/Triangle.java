@@ -47,7 +47,7 @@ public class Triangle extends Shape {
      * @return
      */
 	@Override
-	public Hit intersect(Ray ray) { // TODO: make sure it works
+	public Hit intersect(Ray ray) {
 	    Hit plainHit = getTrianglesPlain().intersect(ray);
 
 	    // Check that the ray intersects the plain
