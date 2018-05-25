@@ -28,12 +28,27 @@ public abstract class Light {
         return Ops.reflect(fromPointToLight.neg(), normal);
     }
 
+    /**
+     * Get the vector between the given point and the light source
+     * @param point
+     * @return
+     */
 	protected abstract Vec vectorFromPointToLight(Point point);
 
+    /**
+     * Calculate the normal of the vector between the given point and the light source
+     * @param point
+     * @return
+     */
     public Vec fromPointToLightNormalized(Point point) {
         return vectorFromPointToLight(point).normalize();
     }
 
+    /**
+     * Calculate the distance between a given point to the light
+     * @param point
+     * @return
+     */
     public abstract double distanceToLight(Point point);
 
 }

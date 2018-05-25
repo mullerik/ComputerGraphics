@@ -239,8 +239,6 @@ public class Scene {
 	}
 	
 	private Vec calcColor(Ray ray, int recusionLevel) {
-		//TODO: implement this method
-//		throw new UnimplementedMethodException("calcColor(Ray, int)");
 
 		// Stop from continuing to infinite loop
 		if (this.maxRecursionLevel <= recusionLevel) return new Vec();
@@ -310,6 +308,14 @@ public class Scene {
         return result;
     }
 
+    /**
+     * Check if there are surfaces between a point and a light
+     * @param point
+     * @param normalToPointsSurface
+     * @param surfaces
+     * @param light
+     * @return
+     */
     private static boolean isShadowed(Point point, Vec normalToPointsSurface, List<Surface> surfaces, Light light) {
         Point rayOrigin = point.add(normalToPointsSurface.mult(Ops.epsilonVec));
         Vec rayDirection = light.fromPointToLightNormalized(rayOrigin);
