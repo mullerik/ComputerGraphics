@@ -66,7 +66,7 @@ public class Triangle extends Shape {
         double t1 = ((u.dot(v) * w.dot(u)) - (u.dot(u) * w.dot(v))) / k;
 
         // Conditions: s1 > 0, t1 > 0, s1 + t1 <= 1
-        if(s1 > Ops.epsilon && t1 > Ops.epsilon && s1 + t1 <= 1) {
+        if(s1 > Ops.epsilon && t1 > Ops.epsilon && s1 + t1 <= 1 + Ops.epsilon) {
             return plainHit;
         }
         return null;
