@@ -1,9 +1,6 @@
 package edu.cg.scene.objects;
 
-import edu.cg.algebra.Hit;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
+import edu.cg.algebra.*;
 
 public class Sphere extends Shape {
 	private Point center;
@@ -38,34 +35,37 @@ public class Sphere extends Shape {
 
 	/**
 	 * Intersect ray and sphere
-	 * based on https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld013.htm
+	 * based on https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 	 * @param ray
 	 * @return
 	 */
 	@Override
-	public Hit intersect(Ray ray) { // TODO: make sure it works
-		Vec l = center.sub(ray.source());
-		double tca = l.dot(ray.direction());
-		if(tca < 0) {
-			// ray goes to opposite direction
-			return null;
-		}
+	public Hit intersect(Ray ray) {
+        double a = 1;
+        double b = 2 * (ray.direction().dot(ray.source().sub(center)));
+        double c = Math.pow(ray.source().sub(center).length(), 2) - radius * radius;
+        double disc = b * b - 4.0 * a * c;
 
-		double dSquare = l.dot(l) - (tca * tca);
-		double radSquare = radius * radius;
-		if(dSquare > radSquare) {
-			// no intersection
-			return null;
-		}
-		double thc = Math.sqrt(radSquare - dSquare);
-		double t = tca - thc;
-		if( t < 0) {
+        if(disc < Ops.epsilon || disc > Ops.infinity) {
+            return null;
+        }
+        disc = Math.sqrt(disc);
 
-			// Ray goes inside the sphere
-			t = tca + thc;
-		}
-		Vec normalToSphere = ray.add(t).sub(this.center).normalize();
-		return new Hit(t, normalToSphere);
+        double t0 = (- b - disc) / (2 * a);
+        double t1 = (- b + disc) / (2 * a);
+
+        // If 2 intersections with sphere
+        if(t0 < Ops.infinity && t0 > Ops.epsilon && t1 > Ops.epsilon) {
+            Vec normalToSphere = ray.add(t0).sub(this.center).normalize();
+            return new Hit(t0, normalToSphere).setIsWithin(false);
+        }
+
+        // One intersection
+        if(t1 < Ops.infinity && t1 > Ops.epsilon) {
+            Vec normalToSphere = ray.add(t1).sub(this.center).normalize().neg();
+            return new Hit(t1, normalToSphere).setIsWithin(true);
+        }
+        return null;
 	}
 
     // According to https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld013.htm
