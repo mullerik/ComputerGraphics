@@ -294,42 +294,38 @@ public class Scene {
 			Vec reflection = Ops.reflect(ray.direction(), bestHit.getNormalToSurface());
 			Ray newRay = new Ray(point, reflection);
 
-			// Calculate weight
-			Vec weight = closestSurface.Ks().mult(closestSurface.reflectionIntensity());
+			// Calculate intensity for reflection
+			Vec refIntensity = closestSurface.Ks().mult(closestSurface.reflectionIntensity());
 
 			// Calculate the reflective color recursively and add it to result
-			Vec tmpResult = this.calcColor(newRay, recusionLevel + 1);
-			tmpResult = tmpResult.mult(weight);
+			Vec tmpResult = this.calcColor(newRay, recusionLevel + 1).mult(refIntensity);
 
 			// Add tmp result to our result
 			result = result.add(tmpResult);
 		}
 
-		// Add refractions if specified
-		if (this.getRenderRefarctions()) {
-			if (closestSurface.isTransparent()) {
-				double n1 = closestSurface.n1(bestHit);
-				double n2 = closestSurface.n2(bestHit);
+		// Add refractions if specified and surface is transparent
+		if (this.getRenderRefarctions() && closestSurface.isTransparent()) {
+			double n1 = closestSurface.n1(bestHit);
+			double n2 = closestSurface.n2(bestHit);
 
-				// Create a new ray with the point & direction
-				Vec refraction = Ops.refract(ray.direction(), bestHit.getNormalToSurface(), n1, n2);
-				Ray newRay = new Ray(point, refraction);
+			// Create a new ray with the point & direction
+			Vec refraction = Ops.refract(ray.direction(), bestHit.getNormalToSurface(), n1, n2);
+			Ray newRay = new Ray(point, refraction);
 
-				// Calculate weight
-				Vec weight = closestSurface.Kt().mult(closestSurface.refractionIntensity());
+			// Calculate intensity for refraction
+			Vec refIntensity = closestSurface.Kt().mult(closestSurface.refractionIntensity());
 
-				// Calculate the refraction color recursively and add it to result
-				Vec tmpResult = this.calcColor(newRay, recusionLevel + 1);
-				tmpResult = tmpResult.mult(weight);
+			// Calculate the refraction color recursively and add it to result
+			Vec tmpResult = this.calcColor(newRay, recusionLevel + 1).mult(refIntensity);
 
-				// Add tmp result to our result
-				result = result.add(tmpResult);
+			// Add tmp result to our result
+			result = result.add(tmpResult);
 			}
-		}
 
 		// Return final color
 		return result;
-    }
+	}
 
     /**
      * Check if there are surfaces between a point and a light

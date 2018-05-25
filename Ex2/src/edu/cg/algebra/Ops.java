@@ -103,26 +103,36 @@ public class Ops {
 	}
 	
 	public static Vec refract(Vec u, Vec normal, double n1, double n2) {
-		//TODO: Bonus implementation
-		//Snell's law: n1*sin(theta1) = n2*sin(theta2)
-		//throw new UnimplementedMethodException("Ops.refract(Vec, Vec, double, double)");
-		if (n1 == n2) {
-			return u;
-		}
-		double dot = Ops.dot(Ops.neg(u), normal);
-		dot *= dot;
-		if (n1 > n2) {
-			double criticalAngle = n2 / n1;
-			if (1.0 - dot >= (criticalAngle *= criticalAngle)) {
+
+		// Snell's law: n1*sin(theta1) = n2*sin(theta2)
+		// https://en.wikipedia.org/wiki/Snell%27s_law
+		// Presentation slide 73
+
+		// If n1==n2 there isn't a refraction
+		if (n1 == n2) return u;
+
+		double hitAngle = Ops.dot(Ops.neg(u), normal);
+		hitAngle = Math.pow(hitAngle, 2);
+
+		// When light travels from a medium with a higher refractive index to one with a lower refractive index,
+		// Snell's law seems to require in some cases (whenever the angle of incidence is large enough)
+		// that the sine of the angle of refraction be greater than one.
+		if (n1 > n2){
+			// There's no refraction at angels grater than the critical angle, ray reflects back
+			// n2 / n1 - critical angle
+			double criticalAngle = Math.pow((n2 / n1), 2);
+			if (1 - hitAngle >= criticalAngle)
 				return Ops.reflect(u, normal);
-			}
 		}
-		Vec b = Ops.add(u, Ops.mult(Ops.dot(Ops.neg(u), normal), normal));
-		b = Ops.normalize(b);
-		double sin2Theta2 = n1 * n1 * (1.0 - dot) / (n2 * n2);
-		double cos2Theta2 = 1.0 - sin2Theta2;
-		double sinTheta2 = Math.sqrt(sin2Theta2);
-		double cosTheta2 = Math.sqrt(cos2Theta2);
-		return Ops.add(Ops.mult(- cosTheta2, normal), Ops.mult(sinTheta2, b));
+
+		// Ray is refracted
+		// http://shaderbits.com/blog/optimized-snell-s-law-refraction/
+		// We need to calculate x and normalize it
+		// y is the normal we're given
+		Vec x = Ops.add(u, Ops.mult(Ops.dot(Ops.neg(u), normal), normal)).normalize();
+		double sinTetha = Math.pow(n1, 2) * (1.0 - hitAngle) / Math.pow(n2, 2);
+		Vec sinXform = Ops.mult(Math.sqrt(sinTetha), x);
+		Vec cosYform = Ops.mult(- Math.sqrt(1 - sinTetha), normal);
+		return Ops.add(sinXform, cosYform);
 	}
 }
