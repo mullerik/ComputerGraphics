@@ -37,4 +37,9 @@ public class DirectionalLight extends Light {
     protected Vec vectorFromPointToLight(Point point) {
         return direction.neg();
     }
+
+    @Override
+    public double distanceToLight(Point point) {
+        return Double.MAX_VALUE;
+    }
 }

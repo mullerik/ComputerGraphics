@@ -57,4 +57,9 @@ public class PointLight extends Light {
 		this.kc = kc;
 		return this;
 	}
+
+    @Override
+    public double distanceToLight(Point point) {
+        return point.sub(position).length();
+    }
 }

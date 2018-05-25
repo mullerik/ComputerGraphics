@@ -265,6 +265,9 @@ public class Scene {
 
 		Point point = ray.add(bestHit.t());
         for(Light light: lightSources) {
+            if(isShadowed(point, bestHit.getNormalToSurface(), surfaces, light)) {
+                continue;
+            }
 
             // From slide 58
             double cosAngleBetweenNornalAndLight = light.calculateCosAngleBetweenNormalAndLight(bestHit.getNormalToSurface(), point);
@@ -305,5 +308,21 @@ public class Scene {
 		}
 
         return result;
+    }
+
+    private static boolean isShadowed(Point point, Vec normalToPointsSurface, List<Surface> surfaces, Light light) {
+        Point rayOrigin = point.add(normalToPointsSurface.mult(Ops.epsilonVec));
+        Vec rayDirection = light.fromPointToLightNormalized(rayOrigin);
+        Ray ray = new Ray(rayOrigin, rayDirection);
+        // Find if there is a surface between the point to the light
+
+        double distanceToLight = light.distanceToLight(rayOrigin);
+        for(Surface surface: surfaces) {
+            Hit hit = surface.intersect(ray);
+            if(hit != null && hit.t() < distanceToLight) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -5,7 +5,8 @@ import edu.cg.UnimplementedMethodException;
 public class Ops {
 	public static final double epsilon = 1e-5;
 	public static final double infinity = 1e8;
-	
+	public static final Vec epsilonVec = new Vec(epsilon);
+
 	public static double dot(Vec u, Vec v) {
 		return u.x*v.x + u.y*v.y + u.z*v.z;
 	}

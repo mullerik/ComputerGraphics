@@ -30,6 +30,10 @@ public abstract class Light {
 
 	protected abstract Vec vectorFromPointToLight(Point point);
 
+    public Vec fromPointToLightNormalized(Point point) {
+        return vectorFromPointToLight(point).normalize();
+    }
 
-	//TODO: add some methods
+    public abstract double distanceToLight(Point point);
+
 }
