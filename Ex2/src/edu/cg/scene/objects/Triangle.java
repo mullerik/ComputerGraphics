@@ -1,15 +1,11 @@
 package edu.cg.scene.objects;
 
-import edu.cg.UnimplementedMethodException;
-import edu.cg.algebra.Hit;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
+import edu.cg.algebra.*;
 
 public class Triangle extends Shape {
 	private Point p1, p2, p3;
 	private transient Plain trianglesPlain = null;
-	
+
 	public Triangle() {
 		p1 = p2 = p3 = null;
 	}
@@ -28,18 +24,18 @@ public class Triangle extends Shape {
         }
         return trianglesPlain;
     }
-	
+
 	public Triangle(Point p1, Point p2, Point p3) {
 		this.p1 = p1;
 		this.p2 = p2;
 		this.p3 = p3;
 	}
-	
+
 	@Override
 	public String toString() {
 		String endl = System.lineSeparator();
 		return "Triangle:" + endl +
-				"p1: " + p1 + endl + 
+				"p1: " + p1 + endl +
 				"p2: " + p2 + endl +
 				"p3: " + p3 + endl;
 	}
@@ -69,8 +65,8 @@ public class Triangle extends Shape {
         double s1 = ((u.dot(v) * w.dot(v)) - (v.dot(v) * w.dot(u))) / k;
         double t1 = ((u.dot(v) * w.dot(u)) - (u.dot(u) * w.dot(v))) / k;
 
-        // Conditions: s1 <= 1, t1 <= 1, s1+t1 <= 1
-        if(s1 <= 1 && t1 <= 1 && s1+t1 <= 1) {
+        // Conditions: s1 > 0, t1 > 0, s1 + t1 <= 1
+        if(s1 > Ops.epsilon && t1 > Ops.epsilon && s1 + t1 <= 1) {
             return plainHit;
         }
         return null;
