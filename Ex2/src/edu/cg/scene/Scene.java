@@ -239,7 +239,6 @@ public class Scene {
 	}
 	
 	private Vec calcColor(Ray ray, int recusionLevel) {
-
 		// Stop from continuing to infinite loop
 		if (this.maxRecursionLevel <= recusionLevel) return new Vec();
 
@@ -288,24 +287,48 @@ public class Scene {
                 result = result.add(diffuse).add(specular);
             }
         }
-        // Add reflections if needed
+
+        // Add reflections if specified
 		if (this.getRenderReflections()) {
         	// Create a new ray with the point & direction
-			Vec refDirection = Ops.reflect(ray.direction(), bestHit.getNormalToSurface());
-			Ray newRay = new Ray(point, refDirection);
+			Vec reflection = Ops.reflect(ray.direction(), bestHit.getNormalToSurface());
+			Ray newRay = new Ray(point, reflection);
 
 			// Calculate weight
-			Vec refWeight = closestSurface.Ks().mult(closestSurface.reflectionIntensity());
+			Vec weight = closestSurface.Ks().mult(closestSurface.reflectionIntensity());
 
 			// Calculate the reflective color recursively and add it to result
 			Vec tmpResult = this.calcColor(newRay, recusionLevel + 1);
-			tmpResult = tmpResult.mult(refWeight);
+			tmpResult = tmpResult.mult(weight);
 
 			// Add tmp result to our result
 			result = result.add(tmpResult);
 		}
 
-        return result;
+		// Add refractions if specified
+		if (this.getRenderRefarctions()) {
+			if (closestSurface.isTransparent()) {
+				double n1 = closestSurface.n1(bestHit);
+				double n2 = closestSurface.n2(bestHit);
+
+				// Create a new ray with the point & direction
+				Vec refraction = Ops.refract(ray.direction(), bestHit.getNormalToSurface(), n1, n2);
+				Ray newRay = new Ray(point, refraction);
+
+				// Calculate weight
+				Vec weight = closestSurface.Kt().mult(closestSurface.refractionIntensity());
+
+				// Calculate the refraction color recursively and add it to result
+				Vec tmpResult = this.calcColor(newRay, recusionLevel + 1);
+				tmpResult = tmpResult.mult(weight);
+
+				// Add tmp result to our result
+				result = result.add(tmpResult);
+			}
+		}
+
+		// Return final color
+		return result;
     }
 
     /**
