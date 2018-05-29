@@ -10,3 +10,4 @@ tmp/
 .loadpath
 .recommenders
 */out*
+*.DS_Store
