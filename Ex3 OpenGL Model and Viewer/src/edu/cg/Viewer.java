@@ -73,6 +73,11 @@ public class Viewer implements GLEventListener {
 			gl.glLoadIdentity();
 			setTrackball(gl);
 
+            // Zoom
+            gl.glLoadIdentity();
+            gl.glTranslated(0, 0, -2 - zoom);
+            gl.glMultMatrixd(rotationMatrix, 0);
+
 			//By this point, we should have already changed the point of view, now set these to null
 			//so we don't change it again on the next redraw.
 			mouseFrom = null;
@@ -182,6 +187,13 @@ public class Viewer implements GLEventListener {
 		//TODO: Set the projection to perspective.
 		this.width = width;
 		this.height = height;
+
+		GL2 gl = drawable.getGL().getGL2();
+
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        double ratio = (double) height / width;
+        gl.glFrustum(-0.15, 0.15, ratio * (-0.15), ratio * 0.15, 0.15, 1000);
 	}
 
 	/**
