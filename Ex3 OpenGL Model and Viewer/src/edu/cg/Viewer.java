@@ -63,12 +63,6 @@ public class Viewer implements GLEventListener {
 
 	private void setupCamera(GL2 gl) {
 		if (!isModelCamera) { //Camera is in an absolute location
-			//TODO: place the camera. You should use mouseFrom, mouseTo, canvas width and
-			//      height (reshape function), zoom etc. This should actually implement the trackball
-			//		and zoom. You might want to store the rotation matrix in an array for next time.
-			//		Relevant functions: glGetDoublev, glMultMatrixd
-			//      Example: gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, rotationMatrix, 0);
-			
 
 			gl.glLoadIdentity();
 			setTrackball(gl);
@@ -150,7 +144,7 @@ public class Viewer implements GLEventListener {
 
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
-		// TODO Typically there's nothing to do here
+		// Typically there's nothing to do here
 	}
 
 	@Override
@@ -158,9 +152,9 @@ public class Viewer implements GLEventListener {
 		GL2 gl = drawable.getGL().getGL2();
 
 		// Initialize display callback timer
-		//TODO Uncomment the following lines to create an animator object and attach it to the canvas.
-		//ani = new FPSAnimator(30, true);
-		//ani.add(drawable);
+		//TODO on hw4 Uncomment the following lines to create an animator object and attach it to the canvas.
+//		ani = new FPSAnimator(30, true);
+//		ani.add(drawable);
 		
 		glPanel.repaint();
 		
@@ -168,7 +162,7 @@ public class Viewer implements GLEventListener {
 	}
 	
 	public void initModel(GL2 gl) {
-		//TODO: light model, normal normalization, depth test, back face culling, ...
+		//TODO: on hw4 light model, normal normalization, depth test, back face culling, ...
 		
 		//gl.glCullFace(GL2.GL_BACK);    // Set Culling Face To Back Face
         //gl.glEnable(GL2.GL_CULL_FACE); // Enable back face culling
@@ -183,8 +177,6 @@ public class Viewer implements GLEventListener {
 
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-		//TODO: Remember the width and height of the canvas for the trackball.
-		//TODO: Set the projection to perspective.
 		this.width = width;
 		this.height = height;
 
