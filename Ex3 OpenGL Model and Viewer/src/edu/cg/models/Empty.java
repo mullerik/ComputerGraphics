@@ -11,6 +11,71 @@ public class Empty implements IRenderable {
 	private boolean isLightSpheres;
 	
 	public void render(GL2 gl) {
+		gl.glBegin(GL2.GL_QUADS);
+		// bottom cube
+		gl.glColor3f(1.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, -0.5f, -0.5f);
+		gl.glColor3f(1.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, 0.5f, -0.5f);
+		gl.glColor3f(1.0f, 1.0f, 0.0f);
+		gl.glVertex3f(0.5f, 0.5f, -0.5f);
+		gl.glColor3f(1.0f, 1.0f, 0.0f);
+		gl.glVertex3f(0.5f, -0.5f, -0.5f);
+
+		// left corner
+		gl.glColor3f(1.0f, 0.0f, 0.0f);
+		gl.glVertex3f(-0.5f, -0.5f, -0.5f);
+		gl.glColor3f(1.0f, 0.0f, 0.0f);
+		gl.glVertex3f(-0.5f, -0.5f, 0.5f);
+		gl.glColor3f(1.0f, 0.0f, 0.0f);
+		gl.glVertex3f(0.5f, -0.5f, 0.5f);
+		gl.glColor3f(1.0f, 0.0f, 0.0f);
+		gl.glVertex3f(0.5f, -0.5f, -0.5f);
+
+		// back corner
+		gl.glColor3f(0.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, -0.5f, -0.5f);
+		gl.glColor3f(0.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, -0.5f, 0.5f);
+		gl.glColor3f(0.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, 0.5f, 0.5f);
+		gl.glColor3f(0.0f, 1.0f, 0.0f);
+		gl.glVertex3f(-0.5f, 0.5f, -0.5f);
+
+
+		// right corner
+		gl.glColor3f(1.0f, 0.0f,1.0f);
+		gl.glVertex3f(0.5f, 0.5f, 0.5f);
+		gl.glColor3f(1.0f, 0.0f,1.0f);
+		gl.glVertex3f(0.5f, 0.5f, -0.5f);
+		gl.glColor3f(1.0f, 0.0f,1.0f);
+		gl.glVertex3f(-0.5f, 0.5f, -0.5f);
+		gl.glColor3f(1.0f, 0.0f,1.0f);
+		gl.glVertex3f(-0.5f, 0.5f, 0.5f);
+
+
+		// upper corner
+		gl.glColor3f(0.0f, 0.0f,1.0f);
+		gl.glVertex3f(0.5f, 0.5f, 0.5f);
+		gl.glColor3f(0.0f, 0.0f,1.0f);
+		gl.glVertex3f(0.5f, -0.5f, 0.5f);
+		gl.glColor3f(0.0f, 0.0f,1.0f);
+		gl.glVertex3f(-0.5f, -0.5f, 0.5f);
+		gl.glColor3f(0.0f, 0.0f,1.0f);
+		gl.glVertex3f(-0.5f, 0.5f, 0.5f);
+
+
+		//front corner
+		gl.glColor3f(0.0f, 1.0f,1.0f);
+		gl.glVertex3f(0.5f, 0.5f, 0.5f);
+		gl.glColor3f(0.0f, 1.0f,1.0f);
+		gl.glVertex3f(0.5f, 0.5f, -0.5f);
+		gl.glColor3f(0.0f, 1.0f,1.0f);
+		gl.glVertex3f(0.5f, -0.5f, -0.5f);
+		gl.glColor3f(0.0f, 1.0f,1.0f);
+		gl.glVertex3f(0.5f, -0.5f, 0.5f);
+
+		gl.glEnd();
 	}
 	
 

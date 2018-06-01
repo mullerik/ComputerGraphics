@@ -6,6 +6,8 @@ import java.awt.Point;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import edu.cg.algebra.Ops;
+import edu.cg.algebra.Vec;
 import edu.cg.models.IRenderable;
 
 /**
@@ -24,8 +26,15 @@ public class Viewer implements GLEventListener {
 	private boolean isModelCamera = false; //Whether the camera is relative to the model, rather than the world (ex6)
 	private boolean isModelInitialized = false; //Whether model.init() was called.
 	
+	// Store the width and height of the canvas:\
+	private int width = 0;
+	private int height = 0;
 
-	public Viewer(Component glPanel) {
+	// Rotation transformation matrix - set to identity
+	private final double[] rotationMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+
+
+    public Viewer(Component glPanel) {
 		this.glPanel = glPanel;
 	}
 
@@ -37,7 +46,8 @@ public class Viewer implements GLEventListener {
 			isModelInitialized = true;
 		}
 		//TODO: uncomment the following line to clear the window before drawing
-		//gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
 
 		setupCamera(gl);
 		if (isAxes)
@@ -59,7 +69,10 @@ public class Viewer implements GLEventListener {
 			//		Relevant functions: glGetDoublev, glMultMatrixd
 			//      Example: gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, rotationMatrix, 0);
 			
-			
+
+			gl.glLoadIdentity();
+			setTrackball(gl);
+
 			//By this point, we should have already changed the point of view, now set these to null
 			//so we don't change it again on the next redraw.
 			mouseFrom = null;
@@ -69,7 +82,67 @@ public class Viewer implements GLEventListener {
 			model.setCamera(gl);
 		}
 	}
-	
+
+	private void setTrackball(GL2 gl) {
+        if(mouseFrom != null && mouseTo != null) {
+            Vec mouseOrigin = mouseCordinatesToSphereVec(mouseFrom).normalize();
+            Vec mouseDestination = mouseCordinatesToSphereVec(mouseTo).normalize();
+
+            Vec axis = mouseOrigin.cross(mouseDestination).normalize();
+            if (axis.length() != 0 && axis.isFinite()) {
+
+                // Calculate rotation angle
+                double angle = Math.acos(mouseOrigin.dot(mouseDestination));
+                angle = angle * (180 / Math.PI); // converts from radians to degrees
+                angle = (angle >= 0 && angle < Ops.infinity) ? angle : 0;
+
+                // Calculate rotation
+                gl.glRotated(angle, axis.x, axis.y, axis.z);
+            }
+        }
+
+        gl.glMultMatrixd(rotationMatrix, 0);
+		gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, rotationMatrix, 0);
+
+
+	}
+
+	// TODO: remove this method (used for debugging)
+    private String getMatStr() {
+        java.lang.StringBuilder builder = new StringBuilder();
+	    builder.append("[");
+        for(int i  = 0; i < rotationMatrix.length; i++){
+
+            if(i > 0 && i % 4 == 0) {
+                builder.append(" | ");
+            }
+            builder.append(rotationMatrix[i]).append(",");
+            if(Double.isNaN(rotationMatrix[i])) {
+                System.out.println(i);
+            }
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    private Vec mouseCordinatesToSphereVec(Point p) {
+		double x = 2 * (double)p.x / width - 1;
+		double y = 1 - (double)(2 * p.y) / height;
+		double z = 2 - x * x - y * y;
+		if (z >= 0) {
+			z = Math.sqrt(z);
+		} else {
+			z = 0;
+		}
+		Vec vec = new Vec(x, y, z);
+
+		try{
+			vec.normalize();
+		} catch (ArithmeticException e) {}
+
+		return vec;
+	}
+
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
 		// TODO Typically there's nothing to do here
@@ -107,6 +180,8 @@ public class Viewer implements GLEventListener {
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		//TODO: Remember the width and height of the canvas for the trackball.
 		//TODO: Set the projection to perspective.
+		this.width = width;
+		this.height = height;
 	}
 
 	/**
