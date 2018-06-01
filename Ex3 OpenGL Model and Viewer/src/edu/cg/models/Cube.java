@@ -11,8 +11,62 @@ public class Cube implements IRenderable {
 	private boolean isLightSpheres;
 	
 	public void render(GL2 gl) {
+        gl.glBegin(GL2.GL_QUADS);
 
-	}
+        double r = 0.7;
+
+        gl.glVertex3d(-r,-r,+r);
+        gl.glVertex3d(+r,-r,+r);
+        gl.glVertex3d(+r,+r,+r);
+        gl.glVertex3d(-r,+r,+r);
+
+        gl.glColor3d(0,0,0);
+        gl.glVertex3d(-r,-r,-r);
+        gl.glColor3d(0,0,1);
+        gl.glVertex3d(-r,-r,+r);
+        gl.glColor3d(0,1,1);
+        gl.glVertex3d(-r,+r,+r);
+        gl.glColor3d(0,1,0);
+        gl.glVertex3d(-r,+r,-r);
+
+        gl.glColor3d(1,0,1);
+        gl.glVertex3d(+r,-r,+r);
+        gl.glColor3d(1,0,0);
+        gl.glVertex3d(+r,-r,-r);
+        gl.glColor3d(1,1,0);
+        gl.glVertex3d(+r,+r,-r);
+        gl.glColor3d(1,1,1);
+        gl.glVertex3d(+r,+r,+r);
+
+        gl.glColor3d(1,1,0);
+        gl.glVertex3d(+r,+r,-r);
+        gl.glColor3d(1,0,0);
+        gl.glVertex3d(+r,-r,-r);
+        gl.glColor3d(0,0,0);
+        gl.glVertex3d(-r,-r,-r);
+        gl.glColor3d(0,1,0);
+        gl.glVertex3d(-r,+r,-r);
+
+        gl.glColor3d(0,1,1);
+        gl.glVertex3d(-r,+r,+r);
+        gl.glColor3d(1,1,1);
+        gl.glVertex3d(+r,+r,+r);
+        gl.glColor3d(1,1,0);
+        gl.glVertex3d(+r,+r,-r);
+        gl.glColor3d(0,1,0);
+        gl.glVertex3d(-r,+r,-r);
+
+        gl.glColor3d(0,0,0);
+        gl.glVertex3d(-r,-r,-r);
+        gl.glColor3d(1,0,0);
+        gl.glVertex3d(+r,-r,-r);
+        gl.glColor3d(1,0,1);
+        gl.glVertex3d(+r,-r,+r);
+        gl.glColor3d(0,0,1);
+        gl.glVertex3d(-r,-r,+r);
+
+        gl.glEnd();
+    }
 	
 
 	@Override

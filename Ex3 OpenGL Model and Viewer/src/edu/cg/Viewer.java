@@ -46,7 +46,8 @@ public class Viewer implements GLEventListener {
 			isModelInitialized = true;
 		}
 		//TODO: uncomment the following line to clear the window before drawing
-		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
 
 		setupCamera(gl);
@@ -54,6 +55,12 @@ public class Viewer implements GLEventListener {
 			renderAxes(gl);
 		
 		//TODO: set wireframe mode
+
+        if (isWireframe) {
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_LINE);
+        } else {
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
+        }
 
 		model.render(gl);
 		
@@ -164,8 +171,10 @@ public class Viewer implements GLEventListener {
 	public void initModel(GL2 gl) {
 		//TODO: on hw4 light model, normal normalization, depth test, back face culling, ...
 		
-		//gl.glCullFace(GL2.GL_BACK);    // Set Culling Face To Back Face
-        //gl.glEnable(GL2.GL_CULL_FACE); // Enable back face culling
+		gl.glCullFace(GL2.GL_BACK);    // Set Culling Face To Back Face
+        gl.glEnable(GL2.GL_CULL_FACE); // Enable back face culling
+
+        gl.glEnable(GL2.GL_DEPTH_TEST);
 		
 		model.init(gl);
 		
