@@ -23,7 +23,7 @@ import edu.cg.models.*;
 
 public class Main {
 	
-	static IRenderable[] models = {new Empty(), new Cube(), new Auto()};
+	static IRenderable[] models = {new Empty(), new Cube(), new Auto(), new Locomotive()};
 	static Point prevMouse;
 	static int currentModel;
 	static Frame frame;
