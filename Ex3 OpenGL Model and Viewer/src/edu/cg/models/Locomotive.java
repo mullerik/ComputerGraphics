@@ -15,9 +15,11 @@ public class Locomotive implements IRenderable {
     private boolean isLightSpheres;
 
     private static final float[] BLACK = { 0, 0, 0 };
+    private static final float[] WHITE = { 1, 1, 1 };
     private static final float[] CHASSIS_COLOR = { 0.86f, 0.1f, 0.1f };
     private static final float[] WHEEL_TIRE = { 0.5f, 0.2f, 0.1f };
     private static final float[] WHEEL_DISK = { 0.75f, 0.15f, 0.05f };
+    private static final float[] LIGHT_OUTER_RING = { 0.3f, 0.3f, 0.3f };
 
     private GL2 gl = null;
     private GLU glu = null;
@@ -30,6 +32,7 @@ public class Locomotive implements IRenderable {
 
         drawChassis();
         drawWheels();
+        drawLights();
 
     }
 
@@ -211,6 +214,33 @@ public class Locomotive implements IRenderable {
         // Color the outside of the tire
         gl.glFrontFace(GL2.GL_CW);
         glu.gluCylinder(quad, 0.15, 0.15f, 0.1f, 20, 1);
+        gl.glFrontFace(GL2.GL_CCW);
+    }
+    private void drawLights(){
+        gl.glPushMatrix();
+        gl.glTranslated(-0.875f, -0.125f, 0.1f);
+        gl.glRotated(90.0f, 0.0f, 1.0f, 0.0f);
+        drawLight();
+        gl.glTranslated(0.2f, 0.0f, 0.0f);
+        drawLight();
+        gl.glPopMatrix();
+    }
+    private void drawLight(){
+        gl.glPushMatrix();
+        drawLightOuterRing();
+        drawLightInnerDisk();
+        gl.glPopMatrix();
+    }
+    private void drawLightInnerDisk(){
+        setColor(WHITE);
+        glu.gluDisk(quad, 0.0f, 0.05f, 20, 1);
+
+    }
+    private void drawLightOuterRing(){
+        setColor(LIGHT_OUTER_RING);
+        // Color the outside of the tire
+        gl.glFrontFace(GL2.GL_CW);
+        glu.gluCylinder(quad, 0.05f, 0.05f, 0.05f, 20, 1);
         gl.glFrontFace(GL2.GL_CCW);
     }
 
