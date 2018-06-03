@@ -3,6 +3,7 @@ package edu.cg.models;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
+import edu.cg.algebra.Ops;
 import edu.cg.algebra.Point;
 import edu.cg.algebra.Vec;
 
@@ -33,6 +34,7 @@ public class Locomotive implements IRenderable {
         drawChassis();
         drawWheels();
         drawLights();
+        drawRoof();
 
     }
 
@@ -241,6 +243,26 @@ public class Locomotive implements IRenderable {
         // Color the outside of the tire
         gl.glFrontFace(GL2.GL_CW);
         glu.gluCylinder(quad, 0.05f, 0.05f, 0.05f, 20, 1);
+        gl.glFrontFace(GL2.GL_CCW);
+    }
+    private void drawRoof(){
+        gl.glPushMatrix();
+        // Move+rotate+stretch the basic roof to fit hte chassis
+        // We're using epsilon to avoid strange effects of two layers one on another
+        gl.glTranslated(-0.35f + Ops.epsilon, 0.25f, 0.0f);
+        gl.glRotated(90.0f, 0.0f, 1.0f, 0.0f);
+        gl.glScaled(4, 1, 1);
+        // Draw the basic roof
+        drawBasicRoof();
+        gl.glPopMatrix();
+    }
+    private void drawBasicRoof(){
+        setColor(BLACK);
+        glu.gluDisk(quad, 0.0f, 0.05f, 20, 1);
+        gl.glFrontFace(GL2.GL_CW);
+        glu.gluCylinder(quad, 0.05f, 0.05f, 0.85f - Ops.epsilon, 20, 1);
+        gl.glTranslated(0.0f, 0.0f, 0.85f- Ops.epsilon);
+        glu.gluDisk(quad, 0.0f, 0.05f, 20, 1);
         gl.glFrontFace(GL2.GL_CCW);
     }
 
