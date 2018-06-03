@@ -3,7 +3,6 @@ package edu.cg.models;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
-import edu.cg.algebra.Ops;
 import edu.cg.algebra.Point;
 import edu.cg.algebra.Vec;
 
@@ -17,22 +16,8 @@ public class Locomotive implements IRenderable {
 
     private static final float[] BLACK = { 0, 0, 0 };
     private static final float[] CHASSIS_COLOR = { 0.86f, 0.1f, 0.1f };
-    private static final float[] DOORS_OUTLINE_COLOR = { 0, 0, 0 };
-    private static final float[] WINDOWS_COLOR = { 0.1f, 0.5f, 0.1f };
-    private static final float[] WHEELS_HUBCAP_COLOR = { 0, 1, 1 };
-    private static final float[] WHEELS_TIRES_COLOR = { 0, 0, 0 };
-    private static final float[] WHEELS_CYLINDER_COLOR = { 0, 0, 0 };
-    private static final float[] LIGHTS_CYLINDER_COLOR = { 0, 1, 1 };
-    private static final float[] LIGHTS_DISK_COLOR = { 0.88f, 0.89f, 0.3f };
-
-    private static final Point FLOOR_A = new Point(0.5,-0.2,0.2);
-    private static final Point FLOOR_B = new Point(-0.8,-0.2,0.2);
-    private static final Point FLOOR_C = new Point(0.5,-0.2,0.2);
-    private static final Point FLOOR_D = new Point(-0.8,-0.2,0.2);
-
-//    drawQuadZ(gl, 0.5D, -0.8D, -0.2D, -0.2D, 0.2D);
-
-
+    private static final float[] WHEEL_TIRE = { 0.5f, 0.2f, 0.1f };
+    private static final float[] WHEEL_DISK = { 0.75f, 0.15f, 0.05f };
 
     private GL2 gl = null;
     private GLU glu = null;
@@ -40,12 +25,14 @@ public class Locomotive implements IRenderable {
 
     public void render(GL2 gl) {
         this.gl = gl;
-        GLU glu = new GLU();
-        GLUquadric quad = glu.gluNewQuadric();
+        glu = new GLU();
+        quad = glu.gluNewQuadric();
 
         drawChassis();
+        drawWheels();
 
     }
+
     private void setColor(float[] color) {
         gl.glColor3fv(color, 0);
     }
@@ -99,12 +86,12 @@ public class Locomotive implements IRenderable {
     }
     private void drawEntireSide(boolean haveDoor) {
         if (haveDoor)
-            gl.glScaled(1.0D, 1.0D, -1.0D);
+            gl.glScaled(1.0f, 1.0f, -1.0f);
 
         drawOnlySidePanel();
 
         gl.glPushMatrix();
-        gl.glTranslated(-0.2f, -0.05d, 0.202f);
+        gl.glTranslated(-0.2f, -0.05f, 0.202f);
         gl.glScaled(1.5f, 2.0f, 1.0f);
 
         // If this side has a door, draw the window much longer
@@ -114,12 +101,14 @@ public class Locomotive implements IRenderable {
         else
             drawSideWindow();
         for (int i = 0; i < 2; i++) {
-            gl.glTranslated(0.15D, 0.0D, 0.0D);
+            gl.glTranslated(0.15f, 0.0f, 0.0f);
             drawSideWindow();
         }
         gl.glPopMatrix();
     }
     private void drawSidePanelsWithWindows() {
+        setColor(CHASSIS_COLOR);
+        gl.glNormal3f(0.0F, -1.0F, 0.0F);
         // Draw side with no door
         drawEntireSide(false);
 
@@ -174,13 +163,55 @@ public class Locomotive implements IRenderable {
 
 
     private void drawChassis() {
-        setColor(CHASSIS_COLOR);
-        gl.glNormal3f(0.0F, -1.0F, 0.0F);
         drawSidePanelsWithWindows();
         drawFrontWindow();
         drawBackWindow();
         drawFrontBackChassisPanels();
+    }
+    private void drawWheels() {
+        gl.glPushMatrix();
 
+        // Draw front wheels (move forward on the x-axis)
+        gl.glTranslated(-0.55f, -0.25f, 0.2f);
+        drawPairOfWheels();
+
+        // Draw back wheels (move backwards on the x-axis)
+        gl.glTranslated(0.75f, 0.0f, 0.0f);
+        drawPairOfWheels();
+        gl.glPopMatrix();
+    }
+
+    private void drawPairOfWheels() {
+        gl.glPushMatrix();
+        drawWheel();
+        gl.glTranslated(0.0f, 0.0f, 0.45f);
+        drawWheel();
+        gl.glTranslated(0.0f, 0.0f, -0.2f);
+        // Return to beginning
+        gl.glPopMatrix();
+    }
+
+    private void drawWheel() {
+        setColor(WHEEL_TIRE);
+        gl.glTranslated(0.0f, 0.0f, -0.05f);
+        drawSideWheel();
+        gl.glTranslated(0.0f, 0.0f, 0.1f);
+        gl.glRotated(180.0f, 1.0f, 0.0f, 0.0f);
+        drawSideWheel();
+        drawWheelOuterTire();
+    }
+    private void drawSideWheel(){
+        setColor(WHEEL_TIRE);
+        glu.gluDisk(quad, 0.1f, 0.15f, 20, 1);
+        setColor(WHEEL_DISK);
+        glu.gluDisk(quad, 0.0f, 0.1f, 20, 1);
+    }
+    private void drawWheelOuterTire(){
+        setColor(WHEEL_TIRE);
+        // Color the outside of the tire
+        gl.glFrontFace(GL2.GL_CW);
+        glu.gluCylinder(quad, 0.15, 0.15f, 0.1f, 20, 1);
+        gl.glFrontFace(GL2.GL_CCW);
     }
 
 
