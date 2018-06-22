@@ -46,7 +46,7 @@ public class Viewer implements GLEventListener {
 		}
 
 		//clear the window before drawing
-		gl.glClearColor(0, 0, 0, 1);
+		gl.glClearColor(0f, 0.5f, 1.0f, 1.0f);
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 
