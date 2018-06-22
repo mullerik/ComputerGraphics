@@ -1,4 +1,4 @@
-package edu.cg;
+package edu.cg.models;
 
 import java.awt.event.KeyEvent;
 import java.io.File;

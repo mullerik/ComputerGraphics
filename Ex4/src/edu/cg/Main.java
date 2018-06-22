@@ -23,7 +23,7 @@ import edu.cg.models.*;
 
 public class Main {
 
-	static IRenderable[] models = {new RollerCoaster(), new Locomotive()};
+	static IRenderable[] models = {new Track(new Locomotive(), TrackPoints.track1()), new Locomotive()};
 	static Point prevMouse;
 	static int currentModel;
 	static Frame frame;

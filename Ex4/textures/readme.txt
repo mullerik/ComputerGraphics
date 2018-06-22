@@ -1,1 +1,0 @@
-Add these texture file to you project folder (the current working directory).
