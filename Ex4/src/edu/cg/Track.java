@@ -14,6 +14,7 @@ import com.jogamp.opengl.util.texture.TextureIO;
 import edu.cg.CyclicList;
 import edu.cg.TrackPoints;
 import edu.cg.algebra.Point;
+import edu.cg.models.IRenderable;
 
 public class Track implements IRenderable {
 	private IRenderable vehicle;
