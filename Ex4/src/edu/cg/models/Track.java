@@ -4,24 +4,28 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.FloatBuffer;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLException;
-import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
 import edu.cg.CyclicList;
+import edu.cg.algebra.Vec;
+import edu.cg.curves.Axis;
+import edu.cg.curves.SplineHelper;
 import edu.cg.TrackPoints;
 import edu.cg.algebra.Point;
-import edu.cg.models.IRenderable;
+import edu.cg.curves.Spline;
 
 public class Track implements IRenderable {
 	private IRenderable vehicle;
 	private CyclicList<Point> trackPoints;
 	private Texture texGrass = null;
 	private Texture texTrack = null;
-	
+	private Spline spline;
+
 	public Track(IRenderable vehicle, CyclicList<Point> trackPoints) {
 		this.vehicle = vehicle;
 		this.trackPoints = trackPoints;
@@ -41,7 +45,10 @@ public class Track implements IRenderable {
 		//TODO: Build your track splines here.
 		//Compute the length of each spline.
 		//Do not repeat those calculations over and over in the render method.
-		//It will make the application to run not smooth.  
+		//It will make the application to run not smooth.
+
+		spline = SplineHelper.createSpline(trackPoints);
+
 		loadTextures(gl);
 		vehicle.init(gl);
 	}
@@ -126,9 +133,14 @@ public class Track implements IRenderable {
 		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_REPEAT);
 		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR_MIPMAP_LINEAR);
 		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAX_LOD, 2);
-		
-		//TODO: implement track rendering here...
-		
+
+        gl.glBegin(GL2.GL_TRIANGLES);
+        for(int i = 0; i < spline.getChainOfRails().size(); i++) {
+            Axis curr = spline.getChainOfRails().get(i);
+            Axis next = spline.getChainOfRails().get(i + 1);
+            drawTrackPiece(gl, curr.getRight(), curr.getPosition(), next.getRight(), next.getPosition());
+        }
+        gl.glEnd();
 		
 		if(lightningEnabled)
 			gl.glEnable(GL2.GL_LIGHTING);
@@ -136,6 +148,45 @@ public class Track implements IRenderable {
 		gl.glDisable(GL2.GL_BLEND);
 		gl.glDisable(GL2.GL_TEXTURE_2D);
 	}
+
+    // TODO TODO  TODO: copied:
+    private void drawTrackPiece(GL2 gl, Vec l0Right, Point l0Pos, Vec l1Right, Point l1Pos) {
+        Vec r0 = l0Right;
+        Vec r1 = l1Right;
+        Point p0 = l0Pos.add(r0.mult(0.05F));
+        Point p1 = l1Pos.add(r1.mult(0.05F));
+        Point p2 = l1Pos.add(r1.mult(-0.05F));
+        Point p3 = l0Pos.add(r0.mult(-0.05F));
+        gl.glTexCoord2d(0.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p0));
+        gl.glTexCoord2d(0.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p1));
+        gl.glTexCoord2d(1.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p2));
+        gl.glTexCoord2d(0.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p0));
+        gl.glTexCoord2d(1.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p2));
+        gl.glTexCoord2d(0.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p1));
+        gl.glTexCoord2d(0.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p0));
+        gl.glTexCoord2d(1.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p2));
+        gl.glTexCoord2d(1.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p3));
+        gl.glTexCoord2d(0.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p0));
+        gl.glTexCoord2d(1.0D, 0.0D);
+        gl.glVertex3fv(toGlFloat(p3));
+        gl.glTexCoord2d(1.0D, 1.0D);
+        gl.glVertex3fv(toGlFloat(p2));
+    }
+    // TODO TODO TODO: copied!
+    private static FloatBuffer toGlFloat(Point p) {
+        return FloatBuffer.wrap(new float[] {p.x, p.y, p.z});
+    }
+
 
 	@SuppressWarnings("unchecked")
 	@Override
