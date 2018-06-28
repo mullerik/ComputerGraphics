@@ -63,17 +63,6 @@ public class SplineHelper {
         Matrix matrixLines = new Matrix(constraintTable);
         Matrix b = new Matrix(bArr, bArr.length);
 
-        for (int i = 0; i < constraintTable.length; i++) {
-            for (int j = 0; j < constraintTable[i].length; j++) {
-                System.out.print(constraintTable[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-        for(int i = 0; i < bArr.length; i++) {
-            System.out.println(bArr[i]);
-        }
-
         Matrix solution = matrixLines.solve(b);
 
         for(int i = 0; i < constraints.size(); i++) {

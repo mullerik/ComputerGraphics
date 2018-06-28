@@ -25,10 +25,14 @@ public class Track implements IRenderable {
 	private Texture texGrass = null;
 	private Texture texTrack = null;
 	private Spline spline;
+	private int trainPositionInSpline = 1;
+	private int speed = 300; // Steps / sec
+	private long lastTrainUpdateTime;
 
 	public Track(IRenderable vehicle, CyclicList<Point> trackPoints) {
 		this.vehicle = vehicle;
 		this.trackPoints = trackPoints;
+		lastTrainUpdateTime = System.currentTimeMillis();
 	}
 	
 	public Track(IRenderable vehicle) {
@@ -42,10 +46,6 @@ public class Track implements IRenderable {
 
 	@Override
 	public void init(GL2 gl) {
-		//TODO: Build your track splines here.
-		//Compute the length of each spline.
-		//Do not repeat those calculations over and over in the render method.
-		//It will make the application to run not smooth.
 
 		spline = SplineHelper.createSpline(trackPoints);
 
@@ -74,15 +74,39 @@ public class Track implements IRenderable {
 	}
 
 	private void renderVehicle(GL2 gl) {
+
+		// Update train's position according to the speed
+		long time = System.currentTimeMillis();
+		long timeElapsed = time - lastTrainUpdateTime;
+		int steps = (int) (timeElapsed * speed / 1000);
+		if(steps != 0) {
+			trainPositionInSpline = (trainPositionInSpline + steps);
+			trainPositionInSpline %= spline.maxPossiblePostions();
+			lastTrainUpdateTime = time;
+		}
+
 		gl.glPushMatrix();
-		
-		//TODO: implement vehicle translations and rotations here...
+
+		Axis trainAxis = spline.getTrainPosition(trainPositionInSpline * -1);
+		MoveGlToAxis(gl, trainAxis);
 		
 		gl.glScaled(.15, .15, .15);
 		gl.glTranslated(0,.35,0);
-		
+
 		vehicle.render(gl);
 		gl.glPopMatrix();
+	}
+
+	private static void MoveGlToAxis(GL2 gl, Axis axis) {
+		gl.glTranslatef(axis.getPosition().x, axis.getPosition().y, axis.getPosition().z);
+
+		// Create the rotation matrix. TODO: maybe do it differently
+		double[] rotationMatrix = new double[]{
+				(double) axis.getForward().x, (double) axis.getForward().y, (double) axis.getForward().z, 0d,
+				(double) axis.getUp().x, (double) axis.getUp().y, (double) axis.getUp().z, 0d,
+				(double) axis.getRight().x, (double) axis.getRight().y, (double) axis.getRight().z, 0d,
+				0d, 0d, 0d, 1.0d};
+		gl.glMultMatrixd(rotationMatrix, 0);
 	}
 
 	private void renderField(GL2 gl) {
@@ -193,11 +217,11 @@ public class Track implements IRenderable {
 	public void control(int type, Object params) {
 		switch(type) {
 		case KeyEvent.VK_UP:
-			//TODO: increase the locomotive velocity
+			speed+= 50;
 			break;
 			
 		case KeyEvent.VK_DOWN:
-			//TODO: decrease the locomotive velocity
+			speed-= 50;
 			break;
 			
 		case KeyEvent.VK_ENTER:

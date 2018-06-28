@@ -1,22 +1,23 @@
 package edu.cg.curves;
 
 import edu.cg.CyclicList;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Vec;
 
 public class Spline {
     private static final double DELTA_RIEMANN_SUM = 1.0d / 1024d;
     private static final float RAIL_LENGTH = 0.05f;
+    private static final float RAIL_POSITION_TARGET_DELTA = 0.002f;
+    private static final float RAIL_POSITION_DELTA_THRESHOLD = 0.0005f;
+    private static final float RAIL_POSITION_SEARCH_DELTA = 0.0002f;
 
     private CyclicList<Polynom3d> curves;
     private CyclicList<Double> curvesEuclideanLength;
-    private double length;
     private CyclicList<Axis> chainOfRails;
+    private CyclicList<Axis> preprocessedPositions;
 
     public Spline(CyclicList<Polynom3d> curves) {
         this.curves = curves;
         this.curvesEuclideanLength = new CyclicList<>();
-        this.length = 0;
+        double length = 0;
 
         for (Polynom3d polynom3d: curves) {
             double size = 0d;
@@ -28,9 +29,10 @@ public class Spline {
                 offset = nextOffset;
             }
             curvesEuclideanLength.add(size);
-            this.length+= size;
+            length += size;
         }
         createChainOfRails();
+        preparePreprocessedPositions();
     }
 
     private void createChainOfRails() {
@@ -38,19 +40,38 @@ public class Spline {
         for(int i = 0; i < curves.size(); i++) {
             Polynom3d curve = curves.get(i);
             for(float f = 0f; f < 1f; f+= RAIL_LENGTH) {
-                Point position = curve.get(f);
-                Vec forward = curve.getdt(f).toVec().normalize();
-                Vec right = curve.getdtdt(f).toVec().cross(forward).normalize();
-                Vec up = forward.cross(right).normalize();
-                chainOfRails.add(new Axis(position, forward, up, right));
+                chainOfRails.add(curve.getAxis(f));
             }
         }
-
-
-
     }
 
     public CyclicList<Axis> getChainOfRails() {
         return chainOfRails;
+    }
+
+    private void preparePreprocessedPositions() {
+        preprocessedPositions = new CyclicList<>();
+        Axis lastAxis = curves.get(0).getAxis(0f);
+        preprocessedPositions.add(lastAxis);
+
+        for(int i = 0; i < curves.size(); i++) {
+            Polynom3d curve = curves.get(i);
+            for(float f = 0f; f < 1f; f+= RAIL_POSITION_SEARCH_DELTA) {
+                Axis currentAxis = curve.getAxis(f);
+                float deltaFromLastAxis = currentAxis.getPosition().sub(lastAxis.getPosition()).length();
+                if(deltaFromLastAxis > RAIL_POSITION_DELTA_THRESHOLD + RAIL_POSITION_TARGET_DELTA || Math.abs(deltaFromLastAxis - RAIL_POSITION_TARGET_DELTA) < RAIL_POSITION_DELTA_THRESHOLD) {
+                    preprocessedPositions.add(currentAxis);
+                    lastAxis = currentAxis;
+                }
+            }
+        }
+    }
+
+    public Axis getTrainPosition(int i) {
+        return preprocessedPositions.get(i);
+    }
+
+    public int maxPossiblePostions() {
+        return preprocessedPositions.size();
     }
 }

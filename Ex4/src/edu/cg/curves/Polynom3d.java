@@ -1,6 +1,7 @@
 package edu.cg.curves;
 
 import edu.cg.algebra.Point;
+import edu.cg.algebra.Vec;
 
 public class Polynom3d {
     float[] x;
@@ -44,5 +45,13 @@ public class Polynom3d {
                 6f * y[0] * t + 2f * y[1],
                 6f * z[0] * t + 2f * z[1]
         );
+    }
+
+    public Axis getAxis(float distance) {
+        Point position = get(distance);
+        Vec forward = getdt(distance).toVec().normalize();
+        Vec right = getdtdt(distance).toVec().cross(forward).normalize();
+        Vec up = forward.cross(right).normalize();
+        return new Axis(position, forward, up, right);
     }
 }
