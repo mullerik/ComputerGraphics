@@ -8,6 +8,7 @@ import java.nio.FloatBuffer;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
@@ -40,8 +41,6 @@ public class Track implements IRenderable {
 	}
 	
 	public Track() {
-		//TODO: uncomment this and change it if for your needs.
-//		this(new Locomotive());
 	}
 
 	@Override
@@ -228,7 +227,7 @@ public class Track implements IRenderable {
 			try {
 				Method m = TrackPoints.class.getMethod("track" + params);
 				trackPoints = (CyclicList<Point>)m.invoke(null);
-				//TODO: replace the track with the new one...
+                spline = SplineHelper.createSpline(trackPoints);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -250,11 +249,18 @@ public class Track implements IRenderable {
 	}
 
 	@Override
+    // Set camera to the train's location.
 	public void setCamera(GL2 gl) {
-		//You should use:
-//		GLU glu = new GLU();
-//		glu.gluLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, up.x, up.y, up.z);
-		//TODO: set the camera here to follow the locomotive...
+		GLU glu = new GLU();
+		Axis trainAxis = spline.getTrainPosition(trainPositionInSpline * -1);
+		Point cameraLocation = trainAxis.getPosition()
+                .add(trainAxis.getUp().mult(0.2f))
+                .add(trainAxis.getForward().mult(0.3f))
+                .add(trainAxis.getRight().mult(0.14f));
+		Point cameraZVector = cameraLocation.add(trainAxis.getForward().mult(-1));
+		glu.gluLookAt(cameraLocation.x, cameraLocation.y, cameraLocation.z,
+				cameraZVector.x, cameraZVector.y, cameraZVector.z,
+				trainAxis.getUp().x, trainAxis.getUp().y, trainAxis.getUp().z);
 	}
 	
 	@Override

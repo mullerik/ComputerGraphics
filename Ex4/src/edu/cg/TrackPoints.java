@@ -33,6 +33,24 @@ public class TrackPoints {
 		ans.add(new Point(.5,-.5,.5));
 		return ans;
 	}
-	
-	//TODO: add more functions track4(), track5()...
+
+    public static CyclicList<Point> track4() {
+        CyclicList<Point> ans = new CyclicList<>();
+        ans.add(new Point(-0.6, 0, 0.3));
+        ans.add(new Point(-0.2, 0, 0.1));
+        ans.add(new Point(0.2, 0, 0.1));
+        ans.add(new Point(0.6, 0, 0.3));
+        ans.add(new Point(0.2, 0, 0.7));
+        ans.add(new Point(-0.2 , 0, 0.7));
+        return ans;
+    }
+
+	public static CyclicList<Point> track5() {
+		CyclicList<Point> ans = new CyclicList<>();
+		ans.add(new Point(0.4, 0, 0.1));
+		ans.add(new Point(0.4, 0.4, 0.2));
+		ans.add(new Point(0 , -0.4, 0.3));
+		ans.add(new Point(-0.4, 0, 0.2));
+		return ans;
+	}
 }

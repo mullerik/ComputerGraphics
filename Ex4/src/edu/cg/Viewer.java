@@ -109,7 +109,6 @@ public class Viewer implements GLEventListener {
 
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
-		// TODO Unload textures if any were loaded using glDeleteTextures()
 	}
 
 	@Override
