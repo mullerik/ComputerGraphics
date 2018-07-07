@@ -41,8 +41,6 @@ public class Track implements IRenderable {
 	}
 	
 	public Track() {
-		//TODO: uncomment this and change it if for your needs.
-//		this(new Locomotive());
 	}
 
 	@Override
@@ -229,7 +227,7 @@ public class Track implements IRenderable {
 			try {
 				Method m = TrackPoints.class.getMethod("track" + params);
 				trackPoints = (CyclicList<Point>)m.invoke(null);
-				//TODO: replace the track with the new one...
+                spline = SplineHelper.createSpline(trackPoints);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
