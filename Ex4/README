@@ -1,0 +1,11 @@
+Implementation notes:
+
+* We implemented the lighting bonus.
+* We chose to calculate the spline points at pre-processing time, instead of calculating each point
+    as the animation runs - this saves computing time(less calculations). This is a classing cpu-memory trade-off
+    and we chose to save computing power, since we have enough memory.
+* We added 2 more tracks to "TrackPoints" class.
+* We draw the rail using triangles due to openGL's nature of expecting triangles (and not polygons) when using textures.
+
+
+Thank you!
